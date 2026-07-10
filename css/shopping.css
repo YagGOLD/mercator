@@ -317,3 +317,24 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 .eco-delta { font-style: normal; font-size: .6rem; line-height: 1.3; }
 .eco-delta.up { color: var(--warn); }
 .eco-delta.down { color: var(--accent); }
+
+/* ============================================================
+   Mobile: conforto de digitação
+   iOS dá zoom automático em campos com fonte < 16px — todos os
+   campos de entrada ficam em 16px para nunca disparar o zoom.
+   ============================================================ */
+.add-row input, .new-list-row input,
+.shop-item .paid, .shop-item .qty-in,
+.comp-selects select {
+  font-size: 16px;
+}
+.shop-item .paid { width: 96px; }
+.shop-item .qty-in { width: 52px; }
+
+/* Linha de adição em duas fileiras: nome em linha cheia;
+   qtd + preço + botão embaixo, com alvos de ~46px */
+.add-row { flex-wrap: wrap; gap: 8px; }
+.add-row #addName { flex: 1 1 100%; min-height: 46px; }
+.add-row #addQty { width: 68px; min-height: 46px; }
+.add-row #addPrice { flex: 1; min-width: 110px; min-height: 46px; }
+.add-row .btn-primary.small { min-height: 46px; padding: 10px 24px; }

@@ -5,7 +5,7 @@
    versão do cache para forçar atualização.
    ============================================================ */
 
-var CACHE = "mercator-v7";
+var CACHE = "mercator-v8";
 
 var FILES = [
   ".",
