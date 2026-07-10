@@ -136,16 +136,22 @@ window.UIList = (function () {
     }
     row.appendChild(stepper);
 
-    // ===== Nome (+ previsto de referência no mercado) =====
+    // ===== Nome =====
     var info = document.createElement("div");
     info.className = "info";
-    var detail = (mode !== "aberta" && item.est) ? "prev. " + Shopping.fmt(item.est) : "";
-    info.innerHTML = "<strong>" + esc(item.name) + "</strong>" +
-      (detail ? '<span class="line-detail">' + detail + "</span>" : "");
+    info.innerHTML = "<strong>" + esc(item.name) + "</strong>";
     row.appendChild(info);
 
-    // ===== Preço pago + total da linha (só mercado/consulta) =====
+    // ===== Linha de dinheiro (2º andar): previsto · pago · total =====
+    // Só no mercado/consulta — no celular o nome fica inteiro em cima
     if (mode !== "aberta") {
+      var money = document.createElement("div");
+      money.className = "money-row";
+
+      var prev = document.createElement("span");
+      prev.className = "line-detail";
+      prev.textContent = item.est ? "prev. " + Shopping.fmt(item.est) : "";
+
       var paid = document.createElement("input");
       paid.type = "number";
       paid.step = "0.01";
@@ -172,8 +178,10 @@ window.UIList = (function () {
         refreshTotals();
       };
 
-      row.appendChild(paid);
-      row.appendChild(sum);
+      money.appendChild(prev);
+      money.appendChild(paid);
+      money.appendChild(sum);
+      row.appendChild(money);
       updateSum();
     }
 

@@ -408,3 +408,14 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
   color: var(--text); font-family: var(--mono); font-size: 1rem; font-weight: 700;
 }
 .totline.has-save #totSave { color: var(--accent); }
+
+/* Item do mercado em dois andares: produto em cima, dinheiro embaixo */
+.shop-item { flex-wrap: wrap; }
+.money-row {
+  flex: 1 1 100%;
+  display: flex; align-items: center; gap: 10px;
+  padding-top: 6px;
+}
+.money-row .line-detail { flex: 1; color: var(--faint); font-size: .72rem; font-family: var(--mono); }
+.money-row .paid { width: 110px; }
+.money-row .line-sum { min-width: 84px; }
