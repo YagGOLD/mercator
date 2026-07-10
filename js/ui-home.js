@@ -25,6 +25,7 @@ window.UIHome = (function () {
     // Mascote VIVO na Home: pisca, mexe a sobrancelha e sorri sozinho
     Animator.attach($("homeAvatarCanvas"), function () { return avatar; });
     $("homeGreeting").innerHTML = greeting();
+    startPhraseRotation();
 
     // Painel de simulação: só em desenvolvimento (file:// ou localhost)
     // ou forçando com ?dev=1 — nunca para usuários da versão publicada
@@ -60,6 +61,22 @@ window.UIHome = (function () {
     "Missão quase completa!",
     "Você compra. Eu lembro."
   ];
+
+  // A frase do mascote troca sozinha a cada 10s enquanto a Home
+  // estiver visível (fade suave; para quando sai da tela)
+  var phraseTimer = null;
+  function startPhraseRotation() {
+    clearInterval(phraseTimer);
+    phraseTimer = setInterval(function () {
+      if (document.getElementById("screenHome").classList.contains("hidden")) return;
+      var el = $("homeGreeting");
+      el.style.opacity = "0";
+      setTimeout(function () {
+        el.innerHTML = greeting();
+        el.style.opacity = "1";
+      }, 250);
+    }, 10000);
+  }
 
   // Mensagens curtas e positivas (spec: nunca invasivas).
   // Contextual primeiro; sem contexto, sorteia uma frase divertida.

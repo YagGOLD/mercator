@@ -556,3 +556,6 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 }
 .hero-avatar { width: 96px; height: 96px; animation: headBob 4s ease-in-out infinite; }
 .hero-avatar canvas { width: 84px; }
+
+/* Fade na troca de frase do mascote */
+#homeGreeting { transition: opacity .25s ease; }
