@@ -139,15 +139,13 @@
     <div class="list-items" id="listItems"></div>
 
     <div class="add-row" id="addRow">
-      <input id="addName" placeholder="Item (ex.: Arroz 5kg)" maxlength="60">
-      <input id="addQty" type="number" value="1" min="1" title="Quantidade">
-      <input id="addPrice" type="number" step="0.01" min="0" placeholder="R$ prev." title="Preço previsto (opcional)">
-      <button class="btn-primary small" id="btnAddItem">+</button>
+      <input id="addName" placeholder="Produto (ex.: Arroz 5kg)" maxlength="60">
+      <button class="btn-primary small" id="btnAddItem">+ Adicionar</button>
     </div>
 
     <div class="list-footer">
-      <div class="totline">
-        Lista <b id="totEst"></b><span id="totCartWrap"> · Carrinho <b id="totSpent"></b></span><span id="totSaveWrap"> · Economia <b id="totSave"></b></span>
+      <div class="totline hidden" id="totLine">
+        Lista <b id="totEst"></b> · Carrinho <b id="totSpent"></b> · Economia <b id="totSave"></b>
       </div>
       <button class="btn-primary" id="btnConclude">Concluir compra</button>
     </div>

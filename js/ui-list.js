@@ -1,12 +1,11 @@
 /* ============================================================
    Mercator — Tela da lista (fase 3)
    Três modos, seguindo o fluxo real de quem faz compras:
-   - "aberta"    → PLANEJANDO em casa: produtos e quantidades
-                   (preço opcional). Botão: Salvar p/ o mercado.
-   - "mercado"   → NO MERCADO: marca itens, digita preços pagos,
+   - "aberta"    → PLANEJANDO em casa: SÓ produto + quantidade
+                   (stepper −/+). Sem preços, sem totais.
+   - "mercado"   → NO MERCADO: marca itens, digita preço pago,
                    totais ao vivo. Botão: Concluir compra.
-   - "concluida" → CONSULTA: somente leitura, para conferência
-                   e comparação com compras futuras.
+   - "concluida" → CONSULTA: somente leitura.
    ============================================================ */
 
 window.UIList = (function () {
@@ -52,23 +51,33 @@ window.UIList = (function () {
     if (!list.items.length) {
       var empty = document.createElement("div");
       empty.className = "empty-hint";
-      empty.textContent = "Adicione os produtos e as quantidades abaixo — os preços podem ficar para o mercado.";
+      empty.textContent = mode === "aberta"
+        ? "Adicione os produtos da sua compra abaixo — os preços ficam para o mercado."
+        : "Lista vazia — adicione produtos abaixo.";
       box.appendChild(empty);
     }
 
     var readOnly = mode === "concluida";
+    list.items.forEach(function (item) { box.appendChild(buildRow(item, readOnly)); });
+    refreshTotals();
+  }
 
-    list.items.forEach(function (item) {
-      var row = document.createElement("div");
-      row.className = "shop-item" + (item.checked ? " checked" : "");
+  function buildRow(item, readOnly) {
+    var row = document.createElement("div");
+    row.className = "shop-item" + (item.checked ? " checked" : "");
 
-      var check = document.createElement("button");
+    var sum = null;       // total da linha (só mercado/consulta)
+    var qtyVal = null;    // display da quantidade
+
+    // ===== Check (só mercado/consulta) =====
+    var check = null;
+    if (mode !== "aberta") {
+      check = document.createElement("button");
       check.className = "check";
       check.innerHTML = item.checked ? "✓" : "";
-      check.disabled = readOnly || mode === "aberta";
-      if (mode === "aberta") check.classList.add("ghost");
+      check.disabled = readOnly;
       check.onclick = function () {
-        if (readOnly || mode === "aberta") return;
+        if (readOnly) return;
         item.checked = !item.checked;
         Shopping.updateList(list);
         renderItems();
@@ -83,136 +92,137 @@ window.UIList = (function () {
           Expressions.playOn($("listMascot"), avatar, "sorrindo", 1500);
         }
       };
+      row.appendChild(check);
+    }
 
-      var qtyIn = document.createElement("input");
-      qtyIn.type = "number";
-      qtyIn.min = "1";
-      qtyIn.className = "qty-in";
-      qtyIn.value = item.qty;
-      qtyIn.title = "Quantidade";
-      qtyIn.disabled = readOnly;
-      qtyIn.oninput = function () {
-        var v = parseInt(qtyIn.value, 10);
-        item.qty = isNaN(v) || v < 1 ? 1 : v;
+    // ===== Quantidade: stepper − / valor / + (nunca abaixo de 1) =====
+    var stepper = document.createElement("div");
+    stepper.className = "stepper";
+    if (readOnly) {
+      var qtyStatic = document.createElement("span");
+      qtyStatic.className = "step-val";
+      qtyStatic.textContent = item.qty + "x";
+      stepper.appendChild(qtyStatic);
+    } else {
+      var minus = document.createElement("button");
+      minus.className = "step-btn";
+      minus.textContent = "−";
+      minus.setAttribute("aria-label", "Diminuir quantidade");
+
+      qtyVal = document.createElement("button");
+      qtyVal.className = "step-val";
+      qtyVal.title = "Toque para aumentar";
+      qtyVal.textContent = item.qty;
+
+      var plus = document.createElement("button");
+      plus.className = "step-btn";
+      plus.textContent = "+";
+      plus.setAttribute("aria-label", "Aumentar quantidade");
+
+      function setQty(q) {
+        item.qty = Math.max(1, q);
+        qtyVal.textContent = item.qty;
+        Shopping.updateList(list);
+        if (sum) updateSum();
+        refreshTotals();
+      }
+      minus.onclick = function () { setQty(item.qty - 1); };
+      plus.onclick = function () { setQty(item.qty + 1); };
+      qtyVal.onclick = function () { setQty(item.qty + 1); };  // tocar no número também soma
+
+      stepper.appendChild(minus);
+      stepper.appendChild(qtyVal);
+      stepper.appendChild(plus);
+    }
+    row.appendChild(stepper);
+
+    // ===== Nome (+ previsto de referência no mercado) =====
+    var info = document.createElement("div");
+    info.className = "info";
+    var detail = (mode !== "aberta" && item.est) ? "prev. " + Shopping.fmt(item.est) : "";
+    info.innerHTML = "<strong>" + esc(item.name) + "</strong>" +
+      (detail ? '<span class="line-detail">' + detail + "</span>" : "");
+    row.appendChild(info);
+
+    // ===== Preço pago + total da linha (só mercado/consulta) =====
+    if (mode !== "aberta") {
+      var paid = document.createElement("input");
+      paid.type = "number";
+      paid.step = "0.01";
+      paid.min = "0";
+      paid.placeholder = "pago R$";
+      paid.className = "paid";
+      paid.disabled = readOnly;
+      if (item.paid !== null) paid.value = item.paid;
+
+      sum = document.createElement("b");
+      sum.className = "line-sum";
+
+      paid.oninput = function () {
+        var v = parseFloat(paid.value);
+        item.paid = isNaN(v) ? null : v;
+        // Digitou o preço = pegou o item: marca sozinho
+        if (!item.checked && item.paid !== null) {
+          item.checked = true;
+          row.classList.add("checked");
+          if (check) check.innerHTML = "✓";
+        }
         Shopping.updateList(list);
         updateSum();
         refreshTotals();
       };
 
-      var info = document.createElement("div");
-      info.className = "info";
-      info.innerHTML = "<strong>" + esc(item.name) + "</strong>" +
-        '<span class="line-detail">' + lineDetail(item) + "</span>";
-
-      // Total da linha (preço × qtd) — fica no FIM da linha e
-      // recalcula ao vivo a cada edição de valor ou quantidade
-      var sum = document.createElement("b");
-      sum.className = "line-sum";
-      function updateSum() {
-        var price = item.paid !== null ? item.paid : item.est;
-        if (price) {
-          sum.textContent = Shopping.fmt(price * item.qty);
-          sum.classList.toggle("saving",
-            mode !== "aberta" && !!item.est && item.paid !== null && item.paid < item.est);
-          sum.classList.remove("empty");
-        } else {
-          sum.textContent = "—";
-          sum.className = "line-sum empty";
-        }
-      }
+      row.appendChild(paid);
+      row.appendChild(sum);
       updateSum();
+    }
 
-      row.appendChild(check);
-      row.appendChild(qtyIn);
-      row.appendChild(info);
-
-      // Campo de preço: no planejamento é opcional ("R$ prev."),
-      // no mercado é o preço pago
-      {
-        var paid = document.createElement("input");
-        paid.type = "number";
-        paid.step = "0.01";
-        paid.min = "0";
-        paid.className = "paid";
-        paid.placeholder = mode === "aberta" ? "R$ prev." : "pago R$";
-        paid.disabled = readOnly;
-        if (mode === "aberta") {
-          if (item.est !== null) paid.value = item.est;
-          paid.oninput = function () {
-            var v = parseFloat(paid.value);
-            item.est = isNaN(v) ? null : v;
-            item.paid = item.est;          // pago nasce igual ao previsto
-            Shopping.updateList(list);
-            updateSum();
-            refreshTotals();
-          };
-        } else {
-          if (item.paid !== null) paid.value = item.paid;
-          paid.oninput = function () {
-            var v = parseFloat(paid.value);
-            item.paid = isNaN(v) ? null : v;
-            // Digitou o preço = pegou o item: marca sozinho
-            if (!item.checked && item.paid !== null) {
-              item.checked = true;
-              row.classList.add("checked");
-              check.innerHTML = "✓";
-            }
-            Shopping.updateList(list);
-            updateSum();
-            refreshTotals();
-          };
-        }
-        row.appendChild(paid);
-        row.appendChild(sum);
+    function updateSum() {
+      if (!sum) return;
+      var price = item.paid !== null ? item.paid : item.est;
+      if (price) {
+        sum.textContent = Shopping.fmt(price * item.qty);
+        sum.className = "line-sum" +
+          (item.est && item.paid !== null && item.paid < item.est ? " saving" : "");
+      } else {
+        sum.textContent = "—";
+        sum.className = "line-sum empty";
       }
+    }
 
-      if (!readOnly) {
-        var del = document.createElement("button");
-        del.className = "list-del";
-        del.textContent = "×";
-        del.onclick = function () {
-          Shopping.removeItem(list, item.id);
-          renderItems();
-        };
-        row.appendChild(del);
-      }
+    // ===== Excluir =====
+    if (!readOnly) {
+      var del = document.createElement("button");
+      del.className = "list-del";
+      del.textContent = "×";
+      del.onclick = function () {
+        Shopping.removeItem(list, item.id);
+        renderItems();
+      };
+      row.appendChild(del);
+    }
 
-      box.appendChild(row);
-    });
-
-    refreshTotals();
-  }
-
-  // Linha de detalhe sob o nome: só o previsto de referência
-  // (o total dinâmico agora é o elemento .line-sum no fim da linha)
-  function lineDetail(item) {
-    if (item.est && mode !== "aberta") return "prev. " + Shopping.fmt(item.est);
-    if (!item.est && mode === "aberta") return "preço fica p/ o mercado";
-    return "";
+    return row;
   }
 
   function refreshTotals() {
     var t = Shopping.totals(list);
-    $("totEst").textContent = Shopping.fmt(t.listTotal);
-    $("totSpent").textContent = Shopping.fmt(t.spent);
-    $("totSave").textContent = Shopping.fmt(t.savings);
-    $("totSave").parentElement.classList.toggle("has-save", t.savings > 0);
-    // Carrinho/Economia só fazem sentido no mercado ou na consulta
-    $("totCartWrap").classList.toggle("hidden", mode === "aberta");
-    $("totSaveWrap").classList.toggle("hidden", mode === "aberta");
-
-    // O botão nunca desabilita silenciosamente — primaryAction explica
-    // o que falta via toast (botão "morto" parece bug para o usuário)
+    // No planejamento não há simulação de valor: rodapé de totais some
+    $("totLine").classList.toggle("hidden", mode === "aberta");
+    if (mode !== "aberta") {
+      $("totEst").textContent = Shopping.fmt(t.listTotal);
+      $("totSpent").textContent = Shopping.fmt(t.spent);
+      $("totSave").textContent = Shopping.fmt(t.savings);
+      $("totLine").classList.toggle("has-save", t.savings > 0);
+    }
     $("btnConclude").disabled = false;
   }
 
   function addFromInputs() {
     var name = $("addName").value.trim();
     if (!name) { $("addName").focus(); return; }
-    var qty = parseInt($("addQty").value, 10) || 1;
-    var est = parseFloat($("addPrice").value);
-    Shopping.addItem(list, name, qty, isNaN(est) ? null : est);
-    $("addName").value = ""; $("addQty").value = "1"; $("addPrice").value = "";
+    Shopping.addItem(list, name, 1, null);   // qtd começa em 1; preço fica p/ o mercado
+    $("addName").value = "";
     $("addName").focus();
     renderItems();
   }
@@ -297,7 +307,6 @@ window.UIList = (function () {
     $("btnBack").onclick = function () { App.openHome(); };
     $("btnAddItem").onclick = addFromInputs;
     $("addName").onkeydown = function (e) { if (e.key === "Enter") addFromInputs(); };
-    $("addPrice").onkeydown = function (e) { if (e.key === "Enter") addFromInputs(); };
     $("btnConclude").onclick = primaryAction;
     $("btnSummaryClose").onclick = function () { App.openHome(); };
   }
