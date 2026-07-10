@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0f13">
+  <title>Mercator</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/creator.css">
+  <link rel="stylesheet" href="css/shopping.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== Tela: Criador de Avatar ===== -->
+  <div id="screenCreator" class="screen hidden">
+    <div class="creator-top">
+      <span class="chip-stat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2 4 7v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-5z" fill="#3fd6c0"/>
+        </svg>
+        <span class="val" id="statLevel">1</span>
+      </span>
+      <span class="chip-stat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M6 3h12l4 6-10 12L2 9l4-6z" fill="#4da3ff"/>
+        </svg>
+        <span class="val" id="statGems">0</span>
+      </span>
+    </div>
+
+    <div class="stage">
+      <div class="stage-title">Monte seu mascote!</div>
+      <div class="avatar-wrap" id="avatarWrap">
+        <canvas id="avatarCanvas" width="48" height="48"></canvas>
+        <div class="avatar-shadow"></div>
+      </div>
+      <div class="speech-bubble hidden" id="speechBubble"></div>
+    </div>
+
+    <div class="sheet">
+      <div class="cat-row" id="catRow"></div>
+      <div class="cat-label" id="catLabel"></div>
+      <div class="item-row" id="itemRow"></div>
+      <div class="swatch-row hidden" id="swatchRow"></div>
+      <button class="btn-primary" id="btnSave">Salvar</button>
+      <button class="btn-ghost" id="btnSkip" style="align-self:center">Pular por enquanto</button>
+    </div>
+  </div>
+
+  <!-- ===== Tela: Home ===== -->
+  <div id="screenHome" class="screen hidden">
+    <div class="home">
+      <div class="home-stats">
+        <span class="chip-stat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2 4 7v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-5z" fill="#3fd6c0"/>
+          </svg>
+          Nível <span class="val" id="homeLevel">1</span>
+        </span>
+        <span class="chip-stat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M6 3h12l4 6-10 12L2 9l4-6z" fill="#4da3ff"/>
+          </svg>
+          <span class="val" id="homeGems">0</span>
+        </span>
+      </div>
+      <div class="home-avatar-chip">
+        <canvas id="homeAvatarCanvas" width="48" height="48"></canvas>
+        <strong id="homeGreeting">Olá!</strong>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+      <div class="xp-label" id="xpLabel"></div>
+
+      <div class="home-section">
+        <div class="section-head">
+          <span>Sua economia</span>
+          <button class="btn-ghost" id="btnCompare">Comparador</button>
+        </div>
+        <div class="eco-row">
+          <div class="eco-tile"><span>Total economizado</span><b id="ecoTotal">R$ 0,00</b></div>
+          <div class="eco-tile"><span>Última compra</span><b id="ecoLast">—</b></div>
+          <div class="eco-tile"><span>Total de despesa</span><b id="ecoSpent">—</b><i class="eco-delta" id="ecoDelta"></i></div>
+        </div>
+      </div>
+
+      <div class="home-section">
+        <div class="section-head">
+          <span>Suas listas</span>
+          <button class="btn-ghost" id="btnNewList">+ Nova lista</button>
+        </div>
+        <div class="new-list-row hidden" id="newListRow">
+          <input id="newListName" placeholder="Nome da lista (ex.: Mercado da semana)" maxlength="40">
+          <button class="btn-primary small" id="btnCreateList">Criar</button>
+        </div>
+        <div id="listsBox"></div>
+      </div>
+
+      <div class="home-section">
+        <div class="section-head"><span>Missões</span></div>
+        <div id="missionsBox"></div>
+      </div>
+
+      <button class="btn-ghost" id="btnEditAvatar">Editar mascote</button>
+
+      <div class="dev-panel">
+        <span class="dev-label">SIMULAÇÃO — atalho de teste; o progresso real vem das compras</span>
+        <div class="dev-row">
+          <button class="btn-ghost" id="btnSimXp">+40 XP</button>
+          <button class="btn-ghost" id="btnSimGems">+25 gemas</button>
+          <button class="btn-ghost" id="btnSimReset">Zerar progresso</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Tela: Lista / modo compra ===== -->
+  <div id="screenList" class="screen hidden">
+    <div class="list-top">
+      <button class="icon-back" id="btnBack" aria-label="Voltar">‹</button>
+      <strong id="listTitle"></strong>
+      <span class="status-badge" id="listStatus"></span>
+      <div class="list-mascot-wrap">
+        <canvas id="listMascot" width="48" height="48"></canvas>
+      </div>
+    </div>
+    <div class="list-bubble hidden" id="listBubble"></div>
+
+    <div class="list-items" id="listItems"></div>
+
+    <div class="add-row" id="addRow">
+      <input id="addName" placeholder="Item (ex.: Arroz 5kg)" maxlength="60">
+      <input id="addQty" type="number" value="1" min="1" title="Quantidade">
+      <input id="addPrice" type="number" step="0.01" min="0" placeholder="R$ prev." title="Preço previsto (opcional)">
+      <button class="btn-primary small" id="btnAddItem">+</button>
+    </div>
+
+    <div class="list-footer">
+      <div class="totline">
+        Lista <b id="totEst"></b><span id="totCartWrap"> · Carrinho <b id="totSpent"></b></span><span id="totSaveWrap"> · Economia <b id="totSave"></b></span>
+      </div>
+      <button class="btn-primary" id="btnConclude">Concluir compra</button>
+    </div>
+
+    <div class="overlay hidden" id="summaryOverlay">
+      <div class="summary-box" id="summaryBox">
+        <h2>Resumo da Compra</h2>
+        <div class="sum-mascot">
+          <canvas id="sumMascot" width="48" height="48"></canvas>
+          <div class="sum-bubble" id="sumBubble"></div>
+        </div>
+        <div class="sum-line" id="sumItems"></div>
+        <div class="sum-line">Total gasto: <b id="sumSpent"></b></div>
+        <div class="sum-reward" id="sumReward"></div>
+        <button class="btn-primary" id="btnSummaryClose">Voltar ao início</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Tela: Comparador de compras ===== -->
+  <div id="screenCompare" class="screen hidden">
+    <div class="list-top">
+      <button class="icon-back" id="btnCompBack" aria-label="Voltar">‹</button>
+      <strong>Comparador de compras</strong>
+    </div>
+    <div class="comp-selects">
+      <label>Compra A <select id="compA"></select></label>
+      <label>Compra B <select id="compB"></select></label>
+    </div>
+    <div class="comp-results" id="compResults"></div>
+  </div>
+
+</div>
+
+<div id="toasts"></div>
+<canvas id="fxCanvas" class="hidden"></canvas>
+
+<!-- Ordem importa: dados → motor → UI → boot (escopo global, sem modules p/ funcionar em file://) -->
+<script src="js/palettes.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/parts/base-head.js"></script>
+<script src="js/parts/hair.js"></script>
+<script src="js/parts/eyes.js"></script>
+<script src="js/parts/mouths.js"></script>
+<script src="js/parts/brows.js"></script>
+<script src="js/parts/facial-hair.js"></script>
+<script src="js/parts/glasses.js"></script>
+<script src="js/parts/accessories.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/expressions.js"></script>
+<script src="js/animator.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/progression.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/shopping.js"></script>
+<script src="js/missions.js"></script>
+<script src="js/ui-creator.js"></script>
+<script src="js/ui-home.js"></script>
+<script src="js/ui-list.js"></script>
+<script src="js/ui-compare.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

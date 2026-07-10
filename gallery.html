@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mercator — Galeria de partes (debug)</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <style>
+    body { padding: 24px; overflow: auto; }
+    h1 { font-size: 1.1rem; margin-bottom: 4px; }
+    .hint { color: var(--muted); font-size: .8rem; margin-bottom: 20px; }
+    h2 { font-size: .85rem; color: var(--accent); margin: 22px 0 10px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .cell {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .cell canvas { width: 96px; image-rendering: pixelated; }
+    .cell span { color: var(--muted); font-size: .68rem; }
+    #randomWrap { display: flex; align-items: center; gap: 20px; margin-top: 10px; }
+    #randomCanvas { width: 192px; image-rendering: pixelated; }
+    #btnRandom { max-width: 220px; }
+  </style>
+</head>
+<body>
+  <h1>Galeria de partes — Mercator</h1>
+  <div class="hint">Folha de contato para revisão dos lotes de pixel art. Abra o console: não deve haver nenhum warning do AvatarCatalog.</div>
+
+  <div id="sections"></div>
+
+  <h2>Avatar aleatório (caça a combinações quebradas)</h2>
+  <div id="randomWrap">
+    <canvas id="randomCanvas" width="48" height="48"></canvas>
+    <button class="btn-primary" id="btnRandom">Sortear</button>
+  </div>
+
+  <script src="js/palettes.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/parts/base-head.js"></script>
+  <script src="js/parts/hair.js"></script>
+  <script src="js/parts/eyes.js"></script>
+  <script src="js/parts/mouths.js"></script>
+  <script src="js/parts/brows.js"></script>
+  <script src="js/parts/facial-hair.js"></script>
+  <script src="js/parts/glasses.js"></script>
+  <script src="js/parts/accessories.js"></script>
+  <script src="js/renderer.js"></script>
+  <script>
+    (function () {
+      var sections = document.getElementById("sections");
+      var refState = { parts: {}, colors: { skin: "skin_02", hair: "hairc_castanho", eyes: "eyec_castanho" } };
+
+      AvatarCatalog.CATEGORIES.forEach(function (cat) {
+        if (cat.swatchOnly) return;
+        var items = AvatarCatalog.list(cat.id);
+        if (!items.length) return;
+        var h = document.createElement("h2");
+        h.textContent = cat.name + " (" + items.length + ")";
+        sections.appendChild(h);
+        var grid = document.createElement("div");
+        grid.className = "grid";
+        items.forEach(function (part) {
+          var cell = document.createElement("div");
+          cell.className = "cell";
+          if (!part.none) {
+            var src = Renderer.thumbnail(part.id, refState);
+            var c = document.createElement("canvas");
+            c.width = 48; c.height = 48;
+            c.getContext("2d").drawImage(src, 0, 0);
+            cell.appendChild(c);
+          }
+          var label = document.createElement("span");
+          label.textContent = part.name + (part.none ? " (nenhum)" : "");
+          cell.appendChild(label);
+          grid.appendChild(cell);
+        });
+        sections.appendChild(grid);
+      });
+
+      var randomCanvas = document.getElementById("randomCanvas");
+      function sortear() { Renderer.draw(randomCanvas, Renderer.randomState()); }
+      document.getElementById("btnRandom").onclick = sortear;
+      sortear();
+    })();
+  </script>
+</body>
+</html>

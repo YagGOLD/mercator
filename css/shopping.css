@@ -1,0 +1,306 @@
+/* ============================================================
+   Mercator — estilos da fase 3 (listas, compra, missões)
+   ============================================================ */
+
+/* Home agora rola */
+.home {
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding-top: 20px;
+  gap: 14px;
+}
+
+/* ===== Seções ===== */
+.home-section {
+  width: 100%;
+  max-width: 420px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  color: var(--muted); font-size: .82rem; font-weight: 600;
+}
+.section-head .btn-ghost { border: 1px solid var(--border); font-size: .76rem; padding: 5px 12px; }
+.empty-hint { color: var(--faint); font-size: .8rem; padding: 10px 4px; }
+
+/* ===== Nova lista ===== */
+.new-list-row { display: flex; gap: 8px; }
+.new-list-row input, .add-row input {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: .85rem; outline: none; color: var(--text);
+  color-scheme: dark;
+}
+.new-list-row input { flex: 1; }
+.new-list-row input:focus, .add-row input:focus { border-color: var(--border-strong); }
+.btn-primary.small { width: auto; padding: 10px 18px; font-size: .85rem; }
+
+/* ===== Cards de lista ===== */
+.list-card {
+  width: 100%;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  text-align: left;
+  transition: border-color .15s, background .15s;
+  position: relative;
+  color: var(--text);
+}
+button.list-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.list-card-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.list-card-main strong { font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-card-main span { color: var(--muted); font-size: .74rem; }
+.list-card-main .save { color: var(--accent); font-style: normal; }
+.list-card .go { color: var(--faint); font-size: 1.3rem; }
+.list-card.done { opacity: .65; }
+.list-del {
+  background: transparent; border: none;
+  color: var(--faint); font-size: 1rem;
+  width: 26px; height: 26px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.list-del:hover { color: var(--warn); background: var(--surface2); }
+
+/* ===== Missões ===== */
+.mission {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.mission.claimed { opacity: .55; }
+.mission-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mission-info strong { font-size: .82rem; }
+.mission-info span { color: var(--muted); font-size: .72rem; }
+.mission-bar {
+  height: 5px; background: var(--surface2);
+  border-radius: 999px; overflow: hidden; margin-top: 3px;
+}
+.mission-fill { height: 100%; background: var(--accent); border-radius: 999px; }
+.mission-reward {
+  color: var(--blue); font-family: var(--mono); font-size: .68rem;
+  text-align: right; line-height: 1.5; flex-shrink: 0;
+}
+
+/* ===== Tela da lista ===== */
+#screenList { position: relative; }
+.list-top {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px 10px;
+}
+.list-top strong { flex: 1; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icon-back {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted); font-size: 1.4rem; line-height: 1;
+  flex-shrink: 0;
+}
+.icon-back:hover { color: var(--text); border-color: var(--border-strong); }
+.list-mascot-wrap { animation: headBob 4s ease-in-out infinite; }
+#listMascot { width: 44px; image-rendering: pixelated; }
+.list-bubble {
+  align-self: flex-end;
+  margin: 0 16px;
+  background: var(--surface2); border: 1px solid var(--border-strong);
+  border-radius: 14px 4px 14px 14px; padding: 7px 13px;
+  font-size: .76rem;
+  animation: toastIn .2s ease;
+}
+
+.list-items {
+  flex: 1; overflow-y: auto;
+  padding: 8px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.shop-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+}
+.shop-item .check {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--faint); background: transparent;
+  color: var(--on-accent); font-weight: 700; font-size: .8rem;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+.shop-item.checked .check { background: var(--accent); border-color: var(--accent); }
+.shop-item .info { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.shop-item .info strong { font-size: .84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shop-item.checked .info strong { text-decoration: line-through; color: var(--muted); }
+.shop-item .info span { color: var(--faint); font-size: .7rem; font-family: var(--mono); }
+.shop-item .paid {
+  width: 84px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 6px 10px;
+  font-size: .74rem; font-family: var(--mono); text-align: right;
+  outline: none; color: var(--text); color-scheme: dark;
+}
+.shop-item .paid:focus { border-color: var(--accent); }
+
+.add-row {
+  display: flex; gap: 6px;
+  padding: 8px 16px;
+}
+.add-row #addName { flex: 1; min-width: 0; }
+.add-row #addQty { width: 52px; text-align: center; }
+.add-row #addPrice { width: 84px; }
+
+.list-footer {
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.totline { color: var(--muted); font-size: .74rem; text-align: center; }
+.totline b { font-family: var(--mono); color: var(--text); }
+.totline.has-save #totSave { color: var(--accent); }
+
+/* ===== Resumo da compra ===== */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 250; padding: 24px;
+  animation: toastIn .2s ease;
+}
+.summary-box {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 26px 24px;
+  width: 100%; max-width: 340px;
+  display: flex; flex-direction: column; gap: 12px;
+  text-align: center;
+}
+.summary-box h2 { font-size: 1.05rem; }
+.sum-line { color: var(--muted); font-size: .85rem; }
+.sum-line b { font-family: var(--mono); color: var(--text); }
+.sum-save { color: var(--accent); font-weight: 700; font-size: .95rem; }
+.sum-reward {
+  color: var(--blue); font-family: var(--mono); font-size: .85rem;
+  background: var(--surface2); border-radius: 999px; padding: 7px;
+}
+
+/* Quantidade editável na linha + subtotal ao vivo */
+.qty-in {
+  width: 46px; flex-shrink: 0;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 6px 4px;
+  font-size: .76rem; font-family: var(--mono); text-align: center;
+  outline: none; color: var(--text); color-scheme: dark;
+}
+.qty-in:focus { border-color: var(--accent); }
+.line-detail .line-total { color: var(--text); font-family: var(--mono); }
+.line-detail .line-total.saving { color: var(--accent); }
+
+/* ===== Economia em destaque (foco do app) ===== */
+.eco-row { display: flex; gap: 8px; }
+.eco-tile {
+  flex: 1;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  text-align: center;
+}
+.eco-tile span { color: var(--faint); font-size: .64rem; }
+.eco-tile b { color: var(--accent); font-family: var(--mono); font-size: .92rem; }
+
+/* ===== Missões compactas ===== */
+.mission-sm {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 4px;
+  font-size: .74rem;
+}
+.mission-sm.claimed { opacity: .45; }
+.mission-sm .mname { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; max-width: 46%; }
+.mission-sm .mbar {
+  flex: 1; height: 4px;
+  background: var(--surface2); border-radius: 999px; overflow: hidden;
+}
+.mission-sm .mfill { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.mission-sm .mreward { color: var(--blue); font-family: var(--mono); font-size: .66rem; flex-shrink: 0; }
+
+/* ===== Mascote falando no resumo ===== */
+.sum-mascot { display: flex; align-items: center; gap: 10px; text-align: left; }
+#sumMascot {
+  width: 52px; flex-shrink: 0;
+  image-rendering: pixelated;
+  background: var(--surface2); border-radius: 50%;
+}
+.sum-bubble {
+  background: var(--surface2); border: 1px solid var(--border-strong);
+  border-radius: 4px 14px 14px 14px;
+  padding: 10px 14px;
+  font-size: .85rem; font-weight: 600;
+  color: var(--accent);
+}
+
+/* ===== Status das listas ===== */
+.status-badge {
+  display: inline-block;
+  border-radius: 999px; padding: 1px 9px;
+  font-size: .6rem; font-weight: 600;
+  background: var(--surface3); color: var(--muted);
+  vertical-align: 2px;
+}
+.status-badge.aberta { background: rgba(77,163,255,.14); color: var(--blue); }
+.status-badge.mercado { background: rgba(63,214,192,.14); color: var(--accent); }
+.status-badge.concluida { background: var(--surface3); color: var(--faint); }
+.shop-item .check.ghost { opacity: .25; cursor: default; }
+.shop-item .check:disabled { cursor: default; }
+.shop-item input:disabled { opacity: .6; }
+
+/* ===== Comparador ===== */
+.comp-selects {
+  display: flex; gap: 10px;
+  padding: 6px 16px 12px;
+}
+.comp-selects label {
+  flex: 1; display: flex; flex-direction: column; gap: 5px;
+  color: var(--faint); font-size: .68rem;
+}
+.comp-selects select {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  color: var(--text); font-size: .8rem; outline: none;
+  appearance: none; -webkit-appearance: none;
+}
+.comp-selects select:focus { border-color: var(--border-strong); }
+.comp-results {
+  flex: 1; overflow-y: auto;
+  padding: 0 16px 20px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.comp-row {
+  display: grid;
+  grid-template-columns: 1fr 76px 76px 92px;
+  gap: 6px; align-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: .74rem; font-family: var(--mono);
+}
+.comp-row .iname {
+  font-family: var(--font); color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.comp-row span { text-align: right; color: var(--muted); }
+.comp-row .iname { text-align: left; }
+.comp-row.head {
+  background: transparent; border: none;
+  color: var(--faint); font-size: .64rem; padding: 4px 12px 0;
+}
+.comp-row.head span { color: var(--faint); }
+.comp-row .up { color: var(--warn); }
+.comp-row .down { color: var(--accent); }
+.comp-row .same { color: var(--faint); }
+.comp-row.total { border-color: var(--border-strong); margin-top: 6px; }
+.comp-row.total .iname, .comp-row.total span { color: var(--text); font-weight: 600; }
+
+/* Aviso de aumento/queda de preços no painel Total de despesa */
+.eco-delta { font-style: normal; font-size: .6rem; line-height: 1.3; }
+.eco-delta.up { color: var(--warn); }
+.eco-delta.down { color: var(--accent); }
