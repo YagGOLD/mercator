@@ -22,7 +22,8 @@ window.UIHome = (function () {
     }
 
     refreshStats(progress);
-    Renderer.draw($("homeAvatarCanvas"), avatar);
+    // Mascote VIVO na Home: pisca, mexe a sobrancelha e sorri sozinho
+    Animator.attach($("homeAvatarCanvas"), function () { return avatar; });
     $("homeGreeting").innerHTML = greeting();
 
     // Painel de simulação: só em desenvolvimento (file:// ou localhost)
@@ -46,7 +47,22 @@ window.UIHome = (function () {
     $("xpLabel").textContent = progress.xp + " / " + need + " XP";
   }
 
+  // Frases divertidas do mascote (sorteadas quando não há nada
+  // contextual para dizer) — sugeridas pelo usuário
+  var FUN_PHRASES = [
+    "Não esquece o café! ☕",
+    "Bora fechar essa lista?",
+    "Tá quase lá! 🚀",
+    "Sua geladeira agradece.",
+    "Hoje tem economia!",
+    "Partiu mercado?",
+    "Lista pronta = sucesso.",
+    "Missão quase completa!",
+    "Você compra. Eu lembro."
+  ];
+
   // Mensagens curtas e positivas (spec: nunca invasivas).
+  // Contextual primeiro; sem contexto, sorteia uma frase divertida.
   // Retorna HTML controlado — números/valores em destaque teal.
   function greeting() {
     var lists = Shopping.loadLists().filter(function (l) {
@@ -55,17 +71,17 @@ window.UIHome = (function () {
     for (var i = 0; i < lists.length; i++) {
       var t = Shopping.totals(lists[i]);
       var left = t.count - t.checked;
-      if (t.count > 0 && left > 0) {
+      if (t.count > 0 && left > 0 && lists[i].status === "mercado") {
         return left === 1 ? "Falta <b>1 item</b> na lista!"
                           : "Faltam <b>" + left + " itens</b> na lista!";
       }
     }
     var h = Shopping.loadHistory();
-    if (h.length && h[0].savings > 0) {
+    if (h.length && h[0].savings > 0 && Math.random() < .5) {
       return "Você economizou <b>" + Shopping.fmt(h[0].savings) + "</b> na última compra!";
     }
-    if (!lists.length) return "Que tal criar uma lista?";
-    return "Tudo pronto por aqui!";
+    if (!lists.length && !h.length) return "Que tal criar uma lista?";
+    return FUN_PHRASES[Math.floor(Math.random() * FUN_PHRASES.length)];
   }
 
   function renderLists() {

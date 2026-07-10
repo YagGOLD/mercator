@@ -548,3 +548,11 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
   color: var(--accent);
 }
 .summary-big .btn-primary { max-width: 340px; margin-top: 14px; }
+
+/* ===== Avatar em destaque (fix: regras antigas encolhiam o canvas) ===== */
+.sum-mascot-big { width: 172px; height: 172px; }
+.sum-mascot-big #sumMascot {
+  width: 150px; background: transparent; border-radius: 0;
+}
+.hero-avatar { width: 96px; height: 96px; animation: headBob 4s ease-in-out infinite; }
+.hero-avatar canvas { width: 84px; }
