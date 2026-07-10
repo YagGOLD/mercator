@@ -338,3 +338,13 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 .add-row #addQty { width: 68px; min-height: 46px; }
 .add-row #addPrice { flex: 1; min-width: 110px; min-height: 46px; }
 .add-row .btn-primary.small { min-height: 46px; padding: 10px 24px; }
+
+/* Total da linha no fim (dinâmico: preço × qtd) */
+.line-sum {
+  font-family: var(--mono); font-size: .82rem;
+  color: var(--text);
+  min-width: 74px; text-align: right;
+  flex-shrink: 0;
+}
+.line-sum.saving { color: var(--accent); }
+.line-sum.empty { color: var(--faint); }

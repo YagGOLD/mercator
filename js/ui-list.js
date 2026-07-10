@@ -95,7 +95,7 @@ window.UIList = (function () {
         var v = parseInt(qtyIn.value, 10);
         item.qty = isNaN(v) || v < 1 ? 1 : v;
         Shopping.updateList(list);
-        info.querySelector(".line-detail").innerHTML = lineDetail(item);
+        updateSum();
         refreshTotals();
       };
 
@@ -103,6 +103,24 @@ window.UIList = (function () {
       info.className = "info";
       info.innerHTML = "<strong>" + esc(item.name) + "</strong>" +
         '<span class="line-detail">' + lineDetail(item) + "</span>";
+
+      // Total da linha (preço × qtd) — fica no FIM da linha e
+      // recalcula ao vivo a cada edição de valor ou quantidade
+      var sum = document.createElement("b");
+      sum.className = "line-sum";
+      function updateSum() {
+        var price = item.paid !== null ? item.paid : item.est;
+        if (price) {
+          sum.textContent = Shopping.fmt(price * item.qty);
+          sum.classList.toggle("saving",
+            mode !== "aberta" && !!item.est && item.paid !== null && item.paid < item.est);
+          sum.classList.remove("empty");
+        } else {
+          sum.textContent = "—";
+          sum.className = "line-sum empty";
+        }
+      }
+      updateSum();
 
       row.appendChild(check);
       row.appendChild(qtyIn);
@@ -125,7 +143,7 @@ window.UIList = (function () {
             item.est = isNaN(v) ? null : v;
             item.paid = item.est;          // pago nasce igual ao previsto
             Shopping.updateList(list);
-            info.querySelector(".line-detail").innerHTML = lineDetail(item);
+            updateSum();
             refreshTotals();
           };
         } else {
@@ -140,11 +158,12 @@ window.UIList = (function () {
               check.innerHTML = "✓";
             }
             Shopping.updateList(list);
-            info.querySelector(".line-detail").innerHTML = lineDetail(item);
+            updateSum();
             refreshTotals();
           };
         }
         row.appendChild(paid);
+        row.appendChild(sum);
       }
 
       if (!readOnly) {
@@ -164,17 +183,12 @@ window.UIList = (function () {
     refreshTotals();
   }
 
-  // Linha de detalhe do item: previsto e subtotal ao vivo (preço × qtd)
+  // Linha de detalhe sob o nome: só o previsto de referência
+  // (o total dinâmico agora é o elemento .line-sum no fim da linha)
   function lineDetail(item) {
-    var price = item.paid !== null ? item.paid : item.est;
-    var parts = [];
-    if (item.est && mode !== "aberta") parts.push("prev. " + Shopping.fmt(item.est));
-    if (price) {
-      parts.push('total <b class="line-total' +
-        (mode !== "aberta" && item.est && item.paid !== null && item.paid < item.est ? " saving" : "") +
-        '">' + Shopping.fmt(price * item.qty) + "</b>");
-    }
-    return parts.length ? parts.join(" · ") : (mode === "aberta" ? "preço fica p/ o mercado" : "sem preço");
+    if (item.est && mode !== "aberta") return "prev. " + Shopping.fmt(item.est);
+    if (!item.est && mode === "aberta") return "preço fica p/ o mercado";
+    return "";
   }
 
   function refreshTotals() {
