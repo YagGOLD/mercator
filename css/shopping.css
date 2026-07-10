@@ -419,3 +419,8 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 .money-row .line-detail { flex: 1; color: var(--faint); font-size: .72rem; font-family: var(--mono); }
 .money-row .paid { width: 110px; }
 .money-row .line-sum { min-width: 84px; }
+
+/* O × de excluir fica na 1ª linha (ao lado do nome); a linha de
+   dinheiro é sempre a última do card */
+.shop-item .money-row { order: 9; }
+.money-row .line-sum { min-width: 74px; }
