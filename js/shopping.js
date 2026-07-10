@@ -53,6 +53,29 @@ window.Shopping = (function () {
     saveLists(loadLists().filter(function (l) { return l.id !== id; }));
   }
 
+  // Cria uma lista nova copiando os itens de outra (compra recorrente).
+  // O previsto da nova = o PAGO da anterior: assim a economia da
+  // próxima compra mede a variação real de preço entre as idas.
+  function createFrom(name, sourceId) {
+    var source = getList(sourceId);
+    var list = createList(name);
+    if (source) {
+      list.items = source.items.map(function (i) {
+        var ref = i.paid !== null ? i.paid : i.est;
+        return {
+          id: uid(),
+          name: i.name,
+          qty: i.qty,
+          est: ref,
+          paid: ref,
+          checked: false
+        };
+      });
+      updateList(list);
+    }
+    return list;
+  }
+
   function addItem(list, name, qty, est) {
     list.items.push({
       id: uid(),
@@ -214,6 +237,7 @@ window.Shopping = (function () {
     getList: getList,
     updateList: updateList,
     createList: createList,
+    createFrom: createFrom,
     removeList: removeList,
     addItem: addItem,
     removeItem: removeItem,

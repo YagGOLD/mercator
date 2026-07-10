@@ -180,15 +180,34 @@ window.UIHome = (function () {
 
     $("btnNewList").onclick = function () {
       $("newListRow").classList.toggle("hidden");
+      fillCopyOptions();
       $("newListName").focus();
     };
     $("btnCreateList").onclick = createFromInput;
     $("newListName").onkeydown = function (e) { if (e.key === "Enter") createFromInput(); };
+
+    // Opções do "Copiar itens de..." — todas as listas, recentes primeiro
+    function fillCopyOptions() {
+      var sel = $("newListCopy");
+      sel.innerHTML = '<option value="">Começar em branco</option>';
+      Shopping.loadLists().forEach(function (l) {
+        var opt = document.createElement("option");
+        opt.value = l.id;
+        var t = Shopping.totals(l);
+        opt.textContent = "Copiar de: " + l.name + " (" + t.count + " itens)";
+        sel.appendChild(opt);
+      });
+    }
+
     function createFromInput() {
-      var name = $("newListName").value.trim();
-      var list = Shopping.createList(name || "Compras");
+      var name = $("newListName").value.trim() || "Compras";
+      var sourceId = $("newListCopy").value;
+      var list = sourceId ? Shopping.createFrom(name, sourceId)
+                          : Shopping.createList(name);
       $("newListName").value = "";
+      $("newListCopy").value = "";
       $("newListRow").classList.add("hidden");
+      if (sourceId) Toast.show("Itens copiados! Previsto = preço da compra anterior.", "ok");
       App.openList(list.id);
     }
 

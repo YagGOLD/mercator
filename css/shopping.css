@@ -348,3 +348,16 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 }
 .line-sum.saving { color: var(--accent); }
 .line-sum.empty { color: var(--faint); }
+
+/* Nova lista: nome em cima; copiar-de + Criar embaixo */
+.new-list-row { flex-wrap: wrap; }
+.new-list-row input { flex: 1 1 100%; min-height: 46px; font-size: 16px; }
+.new-list-actions { display: flex; gap: 8px; flex: 1 1 100%; }
+.new-list-actions select {
+  flex: 1; min-width: 0; min-height: 46px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  color: var(--text); font-size: 16px; outline: none;
+  appearance: none; -webkit-appearance: none;
+}
+.new-list-actions select:focus { border-color: var(--border-strong); }

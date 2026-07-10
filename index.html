@@ -95,7 +95,12 @@
         </div>
         <div class="new-list-row hidden" id="newListRow">
           <input id="newListName" placeholder="Nome da lista (ex.: Mercado da semana)" maxlength="40">
-          <button class="btn-primary small" id="btnCreateList">Criar</button>
+          <div class="new-list-actions">
+            <select id="newListCopy" title="Copiar itens de uma lista existente">
+              <option value="">Começar em branco</option>
+            </select>
+            <button class="btn-primary small" id="btnCreateList">Criar</button>
+          </div>
         </div>
         <div id="listsBox"></div>
       </div>
