@@ -23,7 +23,7 @@ window.UIHome = (function () {
 
     refreshStats(progress);
     Renderer.draw($("homeAvatarCanvas"), avatar);
-    $("homeGreeting").textContent = greeting();
+    $("homeGreeting").innerHTML = greeting();
 
     // Painel de simulação: só em desenvolvimento (file:// ou localhost)
     // ou forçando com ?dev=1 — nunca para usuários da versão publicada
@@ -46,20 +46,26 @@ window.UIHome = (function () {
     $("xpLabel").textContent = progress.xp + " / " + need + " XP";
   }
 
-  // Mensagens curtas e positivas (spec: nunca invasivas)
+  // Mensagens curtas e positivas (spec: nunca invasivas).
+  // Retorna HTML controlado — números/valores em destaque teal.
   function greeting() {
-    var open = Shopping.loadLists().filter(function (l) { return l.status === "aberta"; });
-    for (var i = 0; i < open.length; i++) {
-      var t = Shopping.totals(open[i]);
+    var lists = Shopping.loadLists().filter(function (l) {
+      return l.status === "aberta" || l.status === "mercado";
+    });
+    for (var i = 0; i < lists.length; i++) {
+      var t = Shopping.totals(lists[i]);
       var left = t.count - t.checked;
       if (t.count > 0 && left > 0) {
-        return left === 1 ? "Falta 1 item na lista!" : "Faltam " + left + " itens na lista!";
+        return left === 1 ? "Falta <b>1 item</b> na lista!"
+                          : "Faltam <b>" + left + " itens</b> na lista!";
       }
     }
     var h = Shopping.loadHistory();
-    if (h.length && h[0].savings > 0) return "Você economizou " + Shopping.fmt(h[0].savings) + " na última compra!";
-    if (!open.length) return "Que tal criar uma lista?";
-    return "Olá!";
+    if (h.length && h[0].savings > 0) {
+      return "Você economizou <b>" + Shopping.fmt(h[0].savings) + "</b> na última compra!";
+    }
+    if (!lists.length) return "Que tal criar uma lista?";
+    return "Tudo pronto por aqui!";
   }
 
   function renderLists() {
@@ -87,19 +93,29 @@ window.UIHome = (function () {
       var el = document.createElement("button");
       el.className = "list-card" + (list.status === "concluida" ? " done" : "");
 
+      var when = "";
+      var d = new Date(list.concludedAt || list.createdAt);
+      if (!isNaN(d)) {
+        when = " · " + (list.status === "concluida" ? "" : "criada ") +
+               String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0");
+      }
+
       var detail;
       if (list.status === "aberta") {
-        detail = t.count + (t.count === 1 ? " item" : " itens") +
-                 (t.listTotal ? " · previsto " + Shopping.fmt(t.listTotal) : "");
+        detail = t.count + (t.count === 1 ? " item" : " itens") + when;
       } else if (list.status === "mercado") {
-        detail = t.checked + "/" + t.count + " itens no carrinho" +
+        detail = t.checked + "/" + t.count + " no carrinho" +
                  (t.listTotal ? " · " + Shopping.fmt(t.listTotal) : "");
       } else {
         detail = "gasto " + Shopping.fmt(t.spent) +
-                 (t.savings > 0 ? ' · <em class="save">economizou ' + Shopping.fmt(t.savings) + "</em>" : "");
+                 (t.savings > 0 ? ' · <em class="save">economizou ' + Shopping.fmt(t.savings) + "</em>" : when);
       }
 
       el.innerHTML =
+        '<span class="cart-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+          '<path d="M3 4h2l2.4 12.2a2 2 0 0 0 2 1.8h7.9a2 2 0 0 0 2-1.6L21 8H6" ' +
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<circle cx="10" cy="21" r="1.4" fill="currentColor"/><circle cx="17" cy="21" r="1.4" fill="currentColor"/></svg></span>' +
         '<div class="list-card-main">' +
           '<strong>' + esc(list.name) +
             ' <span class="status-badge ' + list.status + '">' + statusLabel + '</span></strong>' +
@@ -149,7 +165,14 @@ window.UIHome = (function () {
     }
   }
 
-  // Missões compactas: uma linha cada (o foco do app é a economia)
+  // Missões no estilo "hábitos": ícone colorido + barra + progresso
+  var MISSION_ICONS = {
+    m_primeira: { tint: "blue", svg: '<path d="M6 7h12l-1.2 12.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 7zM9 7a3 3 0 0 1 6 0" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>' },
+    m_frequente: { tint: "violet", svg: '<path d="M5 20V10M12 20V4M19 20v-7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>' },
+    m_economizador: { tint: "amber", svg: '<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.9-5.2-2.7-5.2 2.7 1-5.9L3.5 9.2l5.9-.9L12 3z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>' },
+    m_lista_cheia: { tint: "red", svg: '<path d="M12 20.5s-7.5-4.6-9.3-9A5.2 5.2 0 0 1 12 6.6a5.2 5.2 0 0 1 9.3 4.9c-1.8 4.4-9.3 9-9.3 9z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>' }
+  };
+
   function renderMissions() {
     var box = $("missionsBox");
     box.innerHTML = "";
@@ -158,10 +181,18 @@ window.UIHome = (function () {
       row.className = "mission-sm" + (m.claimed ? " claimed" : "");
       row.title = m.def.desc + " — recompensa: +" + m.def.xp + " XP · ◆ " + m.def.gems;
       var pct = Math.min(100, m.value / m.def.target * 100);
+      var ico = MISSION_ICONS[m.def.id] || MISSION_ICONS.m_primeira;
+      var progressLabel = m.claimed ? "✓" :
+        (m.def.target > 1 || m.def.id === "m_economizador"
+          ? Math.floor(m.value) + "/" + m.def.target
+          : (m.done ? "1/1" : "0/1"));
       row.innerHTML =
-        '<span class="mname">' + (m.claimed ? "✓ " : "") + esc(m.def.name) + '</span>' +
-        '<span class="mbar"><span class="mfill" style="width:' + pct + '%"></span></span>' +
-        '<span class="mreward">◆ ' + m.def.gems + '</span>';
+        '<span class="eco-ico ' + ico.tint + '"><svg width="17" height="17" viewBox="0 0 24 24" fill="none">' + ico.svg + '</svg></span>' +
+        '<span class="mission-body">' +
+          '<span class="mname">' + esc(m.def.name) + '</span>' +
+          '<span class="mbar"><span class="mfill" style="width:' + pct + '%"></span></span>' +
+        '</span>' +
+        '<span class="mprog">' + progressLabel + '<em>◆ ' + m.def.gems + '</em></span>';
       box.appendChild(row);
     });
   }
@@ -179,10 +210,11 @@ window.UIHome = (function () {
     $("btnCompare").onclick = function () { App.openCompare(); };
     $("btnDonate").onclick = function () { App.openDonate(function () { App.openHome(); }); };
 
+    // A linha de criação fica sempre visível; o botão foca o campo
+    fillCopyOptions();
     $("btnNewList").onclick = function () {
-      $("newListRow").classList.toggle("hidden");
-      fillCopyOptions();
       $("newListName").focus();
+      $("newListName").scrollIntoView({ block: "center", behavior: "smooth" });
     };
     $("btnCreateList").onclick = createFromInput;
     $("newListName").onkeydown = function (e) { if (e.key === "Enter") createFromInput(); };
@@ -207,7 +239,6 @@ window.UIHome = (function () {
                           : Shopping.createList(name);
       $("newListName").value = "";
       $("newListCopy").value = "";
-      $("newListRow").classList.add("hidden");
       if (sourceId) Toast.show("Itens copiados! Previsto = preço da compra anterior.", "ok");
       App.openList(list.id);
     }
