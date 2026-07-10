@@ -4,22 +4,23 @@
    acento teal). 100% offline: só fontes do sistema.
    ============================================================ */
 
+/* Tema CLEAN BLACK (identidade do YagGOD) — aprovado via preview */
 :root {
-  --bg: #0a0f13;            /* fundo geral */
-  --surface: #111820;       /* cards / bottom sheet */
-  --surface2: #17212b;      /* botões de categoria, campos */
-  --surface3: #1f2c38;      /* hover / thumb do scroll */
-  --border: rgba(255,255,255,.06);
-  --border-strong: rgba(255,255,255,.14);
-  --accent: #3fd6c0;        /* teal da marca */
-  --accent-soft: rgba(63,214,192,.14);
-  --on-accent: #04211c;     /* texto sobre teal */
-  --blue: #4da3ff;          /* gemas / info */
-  --warn: #f7c548;
-  --text: #eaf4f2;
-  --muted: #8ba0a8;
-  --faint: #586b74;
-  --radius: 18px;
+  --bg: #000000;            /* fundo preto puro */
+  --surface: #0c0d0c;       /* cards / bottom sheet */
+  --surface2: #131513;      /* botões de categoria, campos */
+  --surface3: #1b1e1b;      /* hover / thumb do scroll */
+  --border: rgba(255,255,255,.07);
+  --border-strong: rgba(255,255,255,.16);
+  --accent: #02f67c;        /* verde da marca */
+  --accent-soft: rgba(2,246,124,.12);
+  --on-accent: #04170c;     /* texto sobre verde */
+  --blue: #02c3f6;          /* gemas / info */
+  --warn: #fbbf24;
+  --text: #f2f5f3;
+  --muted: #8a938d;
+  --faint: #565e58;
+  --radius: 16px;
   --radius-sm: 14px;
   --font: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
   --mono: 'Cascadia Code', Consolas, monospace;
