@@ -559,3 +559,8 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 
 /* Fade na troca de frase do mascote */
 #homeGreeting { transition: opacity .25s ease; }
+
+/* Apresentação na tela de apoio */
+.donate-intro { color: var(--muted); font-size: .95rem; }
+.donate-intro b { color: var(--accent); }
+.donate h1 { margin-top: -6px; }
