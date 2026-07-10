@@ -10,7 +10,8 @@ window.App = (function () {
     creator: document.getElementById("screenCreator"),
     home: document.getElementById("screenHome"),
     list: document.getElementById("screenList"),
-    compare: document.getElementById("screenCompare")
+    compare: document.getElementById("screenCompare"),
+    donate: document.getElementById("screenDonate")
   };
 
   function show(name) {
@@ -61,19 +62,29 @@ window.App = (function () {
     UICompare.open();
   }
 
+  function openDonate(next) {
+    show("donate");
+    Animator.detach();
+    Donation.open(next);
+  }
+
   // ===== Boot =====
   var saved = Store.loadAvatar();
-  if (saved) {
-    // Itens equipados antes de virarem bloqueados ficam liberados
-    Progress.grandfatherEquipped(saved, Progress.load());
+  // Itens equipados antes de virarem bloqueados ficam liberados
+  if (saved) Progress.grandfatherEquipped(saved, Progress.load());
+
+  function enter() {
+    if (!saved) { openCreator(Store.defaultAvatar()); return; }
     // Deep-links: #lista/<id> abre a lista; #comparador abre o comparador
     var deepLink = location.hash.match(/^#lista\/(.+)$/);
     if (deepLink && Shopping.getList(deepLink[1])) openList(deepLink[1]);
     else if (location.hash === "#comparador") openCompare();
     else openHome();
-  } else {
-    openCreator(Store.defaultAvatar());
   }
+
+  // 1º acesso: convite de contribuição (opcional, nunca bloqueia)
+  if (!Donation.wasSeen()) openDonate(enter);
+  else enter();
 
   // Service worker: só em HTTPS (GitHub Pages, etapa E7). Em file://
   // e IP local o app já é 100% offline por não depender de rede.
@@ -81,5 +92,6 @@ window.App = (function () {
     navigator.serviceWorker.register("sw.js");
   }
 
-  return { openCreator: openCreator, openHome: openHome, openList: openList, openCompare: openCompare };
+  return { openCreator: openCreator, openHome: openHome, openList: openList,
+           openCompare: openCompare, openDonate: openDonate };
 })();

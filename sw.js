@@ -5,7 +5,7 @@
    versão do cache para forçar atualização.
    ============================================================ */
 
-var CACHE = "mercator-v10";
+var CACHE = "mercator-v11";
 
 var FILES = [
   ".",
@@ -33,13 +33,15 @@ var FILES = [
   "js/particles.js",
   "js/shopping.js",
   "js/missions.js",
+  "js/donation.js",
   "js/ui-creator.js",
   "js/ui-home.js",
   "js/ui-list.js",
   "js/ui-compare.js",
   "js/app.js",
   "icons/icon-192.png",
-  "icons/icon-512.png"
+  "icons/icon-512.png",
+  "icons/pix-qr.png"
 ];
 
 self.addEventListener("install", function (e) {

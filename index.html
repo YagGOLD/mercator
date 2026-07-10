@@ -111,6 +111,7 @@
       </div>
 
       <button class="btn-ghost" id="btnEditAvatar">Editar mascote</button>
+      <button class="btn-ghost" id="btnDonate">Apoiar o projeto ❤️</button>
 
       <div class="dev-panel">
         <span class="dev-label">SIMULAÇÃO — atalho de teste; o progresso real vem das compras</span>
@@ -166,6 +167,24 @@
     </div>
   </div>
 
+  <!-- ===== Tela: Contribuição opcional (1º acesso) ===== -->
+  <div id="screenDonate" class="screen hidden">
+    <div class="donate">
+      <h1>Gostou do meu trabalho? 😊</h1>
+      <p>Se este aplicativo foi útil para você e quiser apoiar o
+         desenvolvimento de novos projetos, considere fazer uma
+         contribuição simbólica de <b>R$ 5,00 a R$ 10,00</b> via PIX.</p>
+      <p>Sua ajuda me incentiva a continuar criando ferramentas
+         gratuitas e aprimorando este projeto. ❤️</p>
+      <div class="pix-box">
+        <img id="pixQr" src="icons/pix-qr.png" alt="QR Code PIX" width="180" height="180">
+        <code id="pixKeyText"></code>
+        <button class="btn-ghost pix-copy" id="btnCopyPix">Copiar chave PIX</button>
+      </div>
+      <button class="btn-primary" id="btnDonateContinue">Continuar sem contribuir</button>
+    </div>
+  </div>
+
   <!-- ===== Tela: Comparador de compras ===== -->
   <div id="screenCompare" class="screen hidden">
     <div class="list-top">
@@ -204,6 +223,7 @@
 <script src="js/particles.js"></script>
 <script src="js/shopping.js"></script>
 <script src="js/missions.js"></script>
+<script src="js/donation.js"></script>
 <script src="js/ui-creator.js"></script>
 <script src="js/ui-home.js"></script>
 <script src="js/ui-list.js"></script>

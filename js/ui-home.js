@@ -177,6 +177,7 @@ window.UIHome = (function () {
       App.openCreator(Store.loadAvatar() || Store.defaultAvatar());
     };
     $("btnCompare").onclick = function () { App.openCompare(); };
+    $("btnDonate").onclick = function () { App.openDonate(function () { App.openHome(); }); };
 
     $("btnNewList").onclick = function () {
       $("newListRow").classList.toggle("hidden");
