@@ -25,6 +25,13 @@ window.UIHome = (function () {
     Renderer.draw($("homeAvatarCanvas"), avatar);
     $("homeGreeting").textContent = greeting();
 
+    // Painel de simulação: só em desenvolvimento (file:// ou localhost)
+    // ou forçando com ?dev=1 — nunca para usuários da versão publicada
+    var isDev = location.protocol !== "https:" ||
+                location.hostname === "localhost" ||
+                location.search.indexOf("dev=1") !== -1;
+    document.querySelector(".dev-panel").classList.toggle("hidden", !isDev);
+
     renderEconomy();
     renderLists();
     renderMissions();
