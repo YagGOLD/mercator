@@ -506,3 +506,45 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
   display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
 }
 .mprog em { font-style: normal; color: var(--faint); font-size: .62rem; font-weight: 400; }
+
+/* ===== Rodapé do mercado: só o Valor Total, vivo e em destaque ===== */
+.total-line {
+  text-align: center;
+  color: var(--muted); font-size: .9rem;
+}
+.total-line b {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  color: var(--accent); font-size: 1.5rem; font-weight: 700;
+  margin-left: 6px;
+}
+
+/* ===== Conclusão em tela grande: avatar + total a pagar ===== */
+.summary-big {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px; padding: 28px 24px calc(28px + env(safe-area-inset-bottom));
+  text-align: center;
+}
+.sum-mascot-big {
+  width: 148px; height: 148px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.sum-mascot-big canvas { width: 128px; image-rendering: pixelated; }
+.summary-big .sum-bubble {
+  background: var(--surface2); border: 1px solid var(--border-strong);
+  border-radius: 999px; padding: 10px 20px;
+  font-size: .92rem; font-weight: 600; color: var(--accent);
+}
+.sum-total-label { color: var(--faint); font-size: .8rem; margin-top: 8px; }
+.sum-total {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 3rem; font-weight: 700; line-height: 1.1;
+  color: var(--accent);
+}
+.summary-big .btn-primary { max-width: 340px; margin-top: 14px; }

@@ -215,13 +215,11 @@ window.UIList = (function () {
 
   function refreshTotals() {
     var t = Shopping.totals(list);
-    // No planejamento não há simulação de valor: rodapé de totais some
+    // No planejamento não há simulação de valor: rodapé some.
+    // No mercado: só o Valor Total (carrinho), em destaque e ao vivo.
     $("totLine").classList.toggle("hidden", mode === "aberta");
     if (mode !== "aberta") {
-      $("totEst").textContent = Shopping.fmt(t.listTotal);
-      $("totSpent").textContent = Shopping.fmt(t.spent);
-      $("totSave").textContent = Shopping.fmt(t.savings);
-      $("totLine").classList.toggle("has-save", t.savings > 0);
+      $("totValue").textContent = Shopping.fmt(t.spent);
     }
     $("btnConclude").disabled = false;
   }

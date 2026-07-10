@@ -156,21 +156,19 @@
     </div>
 
     <div class="list-footer">
-      <div class="totline hidden" id="totLine">
-        Lista <b id="totEst"></b> · Carrinho <b id="totSpent"></b> · Economia <b id="totSave"></b>
+      <div class="total-line hidden" id="totLine">
+        Valor Total: <b id="totValue">R$ 0,00</b>
       </div>
       <button class="btn-primary" id="btnConclude">Concluir compra</button>
     </div>
 
     <div class="overlay hidden" id="summaryOverlay">
-      <div class="summary-box" id="summaryBox">
-        <h2>Resumo da Compra</h2>
-        <div class="sum-mascot">
-          <canvas id="sumMascot" width="48" height="48"></canvas>
-          <div class="sum-bubble" id="sumBubble"></div>
-        </div>
+      <div class="summary-big" id="summaryBox">
+        <div class="sum-mascot-big"><canvas id="sumMascot" width="48" height="48"></canvas></div>
+        <div class="sum-bubble" id="sumBubble"></div>
+        <span class="sum-total-label">Total a pagar</span>
+        <div class="sum-total" id="sumSpent"></div>
         <div class="sum-line" id="sumItems"></div>
-        <div class="sum-line">Total gasto: <b id="sumSpent"></b></div>
         <div class="sum-reward" id="sumReward"></div>
         <button class="btn-primary" id="btnSummaryClose">Voltar ao início</button>
       </div>
