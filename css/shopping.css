@@ -23,7 +23,20 @@
   display: flex; align-items: center; justify-content: space-between;
   color: var(--muted); font-size: .82rem; font-weight: 600;
 }
-.section-head .btn-ghost { border: 1px solid var(--border); font-size: .76rem; padding: 5px 12px; }
+/* Botões de ação das seções (+ Nova lista, Comparador): alvo de
+   toque confortável no mobile (~44px) e destaque teal */
+.section-head .btn-ghost {
+  border: 1px solid rgba(63,214,192,.35);
+  color: var(--accent);
+  font-size: .88rem; font-weight: 600;
+  padding: 11px 18px;
+  min-height: 44px;
+}
+.section-head .btn-ghost:hover,
+.section-head .btn-ghost:active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
 .empty-hint { color: var(--faint); font-size: .8rem; padding: 10px 4px; }
 
 /* ===== Nova lista ===== */
