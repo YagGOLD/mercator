@@ -109,11 +109,15 @@
         <div class="new-list-row" id="newListRow">
           <div class="new-list-line">
             <input id="newListName" placeholder="Nome da lista (ex.: Mercado da semana)" maxlength="40">
-            <button class="btn-primary small" id="btnCreateList">Criar</button>
+            <button class="btn-ghost btn-copy" id="btnCopyList" title="Copiar os itens de uma compra salva">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <rect x="9" y="9" width="11" height="11" rx="2.5" stroke="currentColor" stroke-width="2"/>
+                <path d="M5 15V5.5A2.5 2.5 0 0 1 7.5 3H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Copiar lista salva
+            </button>
           </div>
-          <select id="newListCopy" title="Copiar itens de uma lista existente">
-            <option value="">Começar em branco</option>
-          </select>
+          <button class="btn-primary" id="btnCreateList">Criar</button>
         </div>
         <div id="listsBox"></div>
       </div>
@@ -133,6 +137,20 @@
           <button class="btn-ghost" id="btnSimGems">+25 gemas</button>
           <button class="btn-ghost" id="btnSimReset">Zerar progresso</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Escolha da compra a copiar (abre pelo botão "Copiar lista salva") -->
+    <div class="overlay hidden" id="copyOverlay">
+      <div class="copy-box">
+        <strong>Copiar lista salva</strong>
+        <span class="copy-hint">
+          Os itens vêm junto. O previsto de cada um passa a ser o preço que
+          você <b>pagou</b> na compra escolhida — é assim que a próxima compra
+          mede a variação real dos preços.
+        </span>
+        <div class="copy-list" id="copyList"></div>
+        <button class="btn-ghost" id="btnCopyCancel">Cancelar</button>
       </div>
     </div>
   </div>

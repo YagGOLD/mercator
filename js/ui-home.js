@@ -7,6 +7,14 @@ window.UIHome = (function () {
 
   function $(id) { return document.getElementById(id); }
 
+  // Carrinho — usado no card da lista e nas linhas do "Copiar lista salva"
+  var CART_SVG =
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+      '<path d="M3 4h2l2.4 12.2a2 2 0 0 0 2 1.8h7.9a2 2 0 0 0 2-1.6L21 8H6" ' +
+      'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="10" cy="21" r="1.4" fill="currentColor"/>' +
+      '<circle cx="17" cy="21" r="1.4" fill="currentColor"/></svg>';
+
   function render() {
     var progress = Progress.load();
     var avatar = Store.loadAvatar() || Store.defaultAvatar();
@@ -33,6 +41,8 @@ window.UIHome = (function () {
                 location.hostname === "localhost" ||
                 location.search.indexOf("dev=1") !== -1;
     document.querySelector(".dev-panel").classList.toggle("hidden", !isDev);
+
+    $("copyOverlay").classList.add("hidden");   // a Home sempre entra limpa
 
     renderEconomy();
     renderLists();
@@ -145,10 +155,7 @@ window.UIHome = (function () {
       }
 
       el.innerHTML =
-        '<span class="cart-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
-          '<path d="M3 4h2l2.4 12.2a2 2 0 0 0 2 1.8h7.9a2 2 0 0 0 2-1.6L21 8H6" ' +
-          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-          '<circle cx="10" cy="21" r="1.4" fill="currentColor"/><circle cx="17" cy="21" r="1.4" fill="currentColor"/></svg></span>' +
+        '<span class="cart-ico">' + CART_SVG + '</span>' +
         '<div class="list-card-main">' +
           '<strong>' + esc(list.name) +
             ' <span class="status-badge ' + list.status + '">' + statusLabel + '</span></strong>' +
@@ -174,7 +181,6 @@ window.UIHome = (function () {
           return;
         }
         renderLists();          // card atualiza na hora
-        fillCopyOptions();      // "Copiar de..." mostra o nome novo
         Toast.show("Compra renomeada.", "ok");
       };
       el.appendChild(edit);
@@ -253,19 +259,52 @@ window.UIHome = (function () {
     });
   }
 
-  // Opções do "Copiar itens de..." — todas as listas, recentes primeiro.
-  // Fica no escopo do módulo porque renomear uma compra também
-  // precisa atualizar este dropdown.
-  function fillCopyOptions() {
-    var sel = $("newListCopy");
-    sel.innerHTML = '<option value="">Começar em branco</option>';
-    Shopping.loadLists().forEach(function (l) {
-      var opt = document.createElement("option");
-      opt.value = l.id;
+  // ===== Copiar lista salva =====
+  // O botão abre a escolha da compra de origem (antes era um <select>
+  // de largura cheia na Home). Copiar mantém o comportamento de sempre:
+  // os itens vêm junto e o previsto de cada um vira o PAGO da compra
+  // escolhida (Shopping.createFrom).
+  function openCopyPicker() {
+    var lists = Shopping.loadLists();
+    if (!lists.length) {
+      Toast.show("Você ainda não tem nenhuma lista salva para copiar.", "warn");
+      return;
+    }
+
+    var box = $("copyList");
+    box.innerHTML = "";
+    lists.forEach(function (l) {
       var t = Shopping.totals(l);
-      opt.textContent = "Copiar de: " + l.name + " (" + t.count + " itens)";
-      sel.appendChild(opt);
+      var d = new Date(l.concludedAt || l.createdAt);
+      var when = isNaN(d) ? "" :
+        " · " + String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0");
+
+      var row = document.createElement("button");
+      row.className = "copy-row";
+      row.innerHTML =
+        '<span class="cart-ico">' + CART_SVG + '</span>' +
+        '<span class="copy-row-main">' +
+          '<strong>' + esc(l.name) + '</strong>' +
+          '<span>' + t.count + (t.count === 1 ? " item" : " itens") + when + '</span>' +
+        '</span><span class="go">›</span>';
+      row.onclick = function () { copyFrom(l); };
+      box.appendChild(row);
     });
+
+    $("copyOverlay").classList.remove("hidden");
+  }
+
+  function closeCopyPicker() { $("copyOverlay").classList.add("hidden"); }
+
+  // Sem nome digitado, a cópia nasce como "Cópia de <origem>"
+  function copyFrom(source) {
+    var typed = $("newListName").value.trim();
+    var name = (typed || "Cópia de " + source.name).slice(0, 40);
+    var list = Shopping.createFrom(name, source.id);
+    $("newListName").value = "";
+    closeCopyPicker();
+    Toast.show("Itens copiados! Previsto = preço da compra anterior.", "ok");
+    App.openList(list.id);
   }
 
   function esc(s) {
@@ -282,7 +321,6 @@ window.UIHome = (function () {
     $("btnDonate").onclick = function () { App.openDonate(function () { App.openHome(); }); };
 
     // A linha de criação fica sempre visível; o botão foca o campo
-    fillCopyOptions();
     $("btnNewList").onclick = function () {
       $("newListName").focus();
       $("newListName").scrollIntoView({ block: "center", behavior: "smooth" });
@@ -290,14 +328,19 @@ window.UIHome = (function () {
     $("btnCreateList").onclick = createFromInput;
     $("newListName").onkeydown = function (e) { if (e.key === "Enter") createFromInput(); };
 
+    // Copiar lista salva: botão abre o seletor; clicar fora ou Cancelar fecha
+    $("btnCopyList").onclick = openCopyPicker;
+    $("btnCopyCancel").onclick = closeCopyPicker;
+    $("copyOverlay").onclick = function (e) {
+      if (e.target === $("copyOverlay")) closeCopyPicker();
+    };
+
+    // "Criar" abre uma lista em branco. Copiar de outra compra é o
+    // caminho do botão "Copiar lista salva" (openCopyPicker).
     function createFromInput() {
       var name = $("newListName").value.trim() || "Compras";
-      var sourceId = $("newListCopy").value;
-      var list = sourceId ? Shopping.createFrom(name, sourceId)
-                          : Shopping.createList(name);
+      var list = Shopping.createList(name);
       $("newListName").value = "";
-      $("newListCopy").value = "";
-      if (sourceId) Toast.show("Itens copiados! Previsto = preço da compra anterior.", "ok");
       App.openList(list.id);
     }
 

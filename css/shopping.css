@@ -601,3 +601,65 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 .icon-edit { width: 32px; height: 32px; }
 .list-edit { width: 26px; height: 26px; }
 .icon-edit:hover, .list-edit:hover { color: var(--accent); background: var(--surface2); }
+
+/* ============================================================
+   Nova lista: [nome] [Copiar lista salva] em cima, Criar embaixo
+   (substitui o <select> "Começar em branco" de largura total)
+   ============================================================ */
+.new-list-line .btn-copy {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 46px; padding: 10px 15px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: .8rem; font-weight: 600;
+  white-space: nowrap;
+}
+.new-list-line .btn-copy svg { flex-shrink: 0; }
+.new-list-line .btn-copy:hover,
+.new-list-line .btn-copy:active {
+  color: var(--accent);
+  border-color: rgba(2,246,124,.35);
+  background: var(--accent-soft);
+}
+/* Telas estreitas: o campo de nome tem que continuar utilizável */
+@media (max-width: 380px) {
+  .new-list-line .btn-copy { padding: 10px 12px; font-size: .74rem; gap: 5px; }
+}
+
+/* ===== Seletor da compra a copiar ===== */
+.copy-box {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 20px;
+  width: 100%; max-width: 360px;
+  max-height: 78dvh;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.copy-box > strong { font-size: 1rem; }
+.copy-hint { color: var(--muted); font-size: .75rem; line-height: 1.5; }
+.copy-hint b { color: var(--text); font-weight: 600; }
+.copy-list {
+  display: flex; flex-direction: column; gap: 8px;
+  overflow-y: auto;
+  margin: 4px 0;
+}
+.copy-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: left; color: var(--text);
+  transition: border-color .15s, background .15s;
+}
+.copy-row:hover, .copy-row:active {
+  border-color: var(--accent); background: var(--accent-soft);
+}
+.copy-row-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.copy-row-main strong {
+  font-size: .88rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.copy-row-main span { color: var(--muted); font-size: .72rem; }
+.copy-row .go { color: var(--faint); font-size: 1.2rem; flex-shrink: 0; }
