@@ -31,28 +31,21 @@
 
   <h2>Avatar aleatório (caça a combinações quebradas)</h2>
   <div id="randomWrap">
-    <canvas id="randomCanvas" width="48" height="48"></canvas>
+    <canvas id="randomCanvas" width="65" height="65"></canvas>
     <button class="btn-primary" id="btnRandom">Sortear</button>
   </div>
 
   <script src="js/palettes.js"></script>
   <script src="js/catalog.js"></script>
-  <script src="js/parts/base-head.js"></script>
-  <script src="js/parts/hair.js"></script>
-  <script src="js/parts/eyes.js"></script>
-  <script src="js/parts/mouths.js"></script>
-  <script src="js/parts/brows.js"></script>
-  <script src="js/parts/facial-hair.js"></script>
-  <script src="js/parts/glasses.js"></script>
-  <script src="js/parts/accessories.js"></script>
+  <script src="js/parts/new-avatar.js"></script>
+  <script src="js/assets.js"></script>
   <script src="js/renderer.js"></script>
   <script>
-    (function () {
+    // Os assets são imagens: espera o pré-carregamento antes de desenhar.
+    Assets.preload(function () {
       var sections = document.getElementById("sections");
-      var refState = { parts: {}, colors: { skin: "skin_02", hair: "hairc_castanho", eyes: "eyec_castanho" } };
 
       AvatarCatalog.CATEGORIES.forEach(function (cat) {
-        if (cat.swatchOnly) return;
         var items = AvatarCatalog.list(cat.id);
         if (!items.length) return;
         var h = document.createElement("h2");
@@ -64,9 +57,11 @@
           var cell = document.createElement("div");
           cell.className = "cell";
           if (!part.none) {
-            var src = Renderer.thumbnail(part.id, refState);
+            // thumbnails de detalhe facial vêm recortadas/ampliadas,
+            // então o clone acompanha o tamanho da origem
+            var src = Renderer.thumbnail(part.id);
             var c = document.createElement("canvas");
-            c.width = 48; c.height = 48;
+            c.width = src.width; c.height = src.height;
             c.getContext("2d").drawImage(src, 0, 0);
             cell.appendChild(c);
           }
@@ -82,7 +77,7 @@
       function sortear() { Renderer.draw(randomCanvas, Renderer.randomState()); }
       document.getElementById("btnRandom").onclick = sortear;
       sortear();
-    })();
+    });
   </script>
 </body>
 </html>

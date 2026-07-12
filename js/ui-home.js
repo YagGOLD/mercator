@@ -156,6 +156,29 @@ window.UIHome = (function () {
         '</div><span class="go">›</span>';
       el.onclick = function () { App.openList(list.id); };
 
+      // Renomear a compra sem abri-la (só o nome muda)
+      var edit = document.createElement("button");
+      edit.className = "list-edit";
+      edit.title = "Renomear compra";
+      edit.setAttribute("aria-label", "Renomear compra");
+      edit.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none">' +
+        '<path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      edit.onclick = function (e) {
+        e.stopPropagation();
+        var name = prompt("Novo nome da compra:", list.name);
+        if (name === null) return;                    // cancelou
+        if (!Shopping.renameList(list.id, name)) {
+          Toast.show("O nome não pode ficar vazio.", "warn");
+          return;
+        }
+        renderLists();          // card atualiza na hora
+        fillCopyOptions();      // "Copiar de..." mostra o nome novo
+        Toast.show("Compra renomeada.", "ok");
+      };
+      el.appendChild(edit);
+
       var del = document.createElement("button");
       del.className = "list-del";
       del.textContent = "×";
@@ -230,6 +253,21 @@ window.UIHome = (function () {
     });
   }
 
+  // Opções do "Copiar itens de..." — todas as listas, recentes primeiro.
+  // Fica no escopo do módulo porque renomear uma compra também
+  // precisa atualizar este dropdown.
+  function fillCopyOptions() {
+    var sel = $("newListCopy");
+    sel.innerHTML = '<option value="">Começar em branco</option>';
+    Shopping.loadLists().forEach(function (l) {
+      var opt = document.createElement("option");
+      opt.value = l.id;
+      var t = Shopping.totals(l);
+      opt.textContent = "Copiar de: " + l.name + " (" + t.count + " itens)";
+      sel.appendChild(opt);
+    });
+  }
+
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -251,19 +289,6 @@ window.UIHome = (function () {
     };
     $("btnCreateList").onclick = createFromInput;
     $("newListName").onkeydown = function (e) { if (e.key === "Enter") createFromInput(); };
-
-    // Opções do "Copiar itens de..." — todas as listas, recentes primeiro
-    function fillCopyOptions() {
-      var sel = $("newListCopy");
-      sel.innerHTML = '<option value="">Começar em branco</option>';
-      Shopping.loadLists().forEach(function (l) {
-        var opt = document.createElement("option");
-        opt.value = l.id;
-        var t = Shopping.totals(l);
-        opt.textContent = "Copiar de: " + l.name + " (" + t.count + " itens)";
-        sel.appendChild(opt);
-      });
-    }
 
     function createFromInput() {
       var name = $("newListName").value.trim() || "Compras";

@@ -1,160 +1,133 @@
 /* ============================================================
    Mercator — Motor de renderização do avatar
-   Desenha o avatar em camadas num canvas 48x48 (upscale via CSS
-   com image-rendering: pixelated). Cada parte é uma matriz de
-   caracteres cuja legend aponta para slots semânticos de cor
-   ("skin.base", "hair.light"...) resolvidos contra as cores
-   escolhidas — é assim que a recolorização funciona.
+   Empilha os PNGs do pack New_Avatar num canvas 65x65 (upscale via
+   CSS com image-rendering: pixelated). Os assets já vêm alinhados
+   entre si, então cada camada é desenhada em (0,0) — a única
+   variação é o deslocamento vertical usado pelas animações.
+
+   A API pública é a mesma do motor antigo (draw / thumbnail /
+   randomState), então UI, Animator e Expressions não mudaram de
+   contrato ao trocarmos matrizes de pixel por imagens.
    ============================================================ */
 
 window.Renderer = (function () {
 
   var GRID = AvatarCatalog.GRID;
 
-  // Ordem de empilhamento (fase 2 reserva "background" antes e "frame" depois)
+  // Ordem de empilhamento (de trás para frente).
+  // Cabelo por último: cai sobre a testa, o rosto e os ombros.
   var LAYER_ORDER = [
-    "accessoryBack", "hairBack",
-    "head", "mouth", "eyes", "brows",
-    "mustache", "beard",
-    "hairFront", "glasses", "accessory"
+    "skin", "eyes", "eyebrows", "nose", "mouth", "cloth", "hair"
   ];
+
+  // Linha dos olhos no pack (y em pixels de arte). Todos os assets
+  // usam a mesma cabeça de referência, então é constante.
+  var EYE_LINE = 32;
 
   var thumbCache = {};
 
-  // ===== Resolução de cores =====
-  function buildColorMap(state) {
-    var P = window.Palettes;
-    var skin = P.byId(P.skins, state.colors.skin);
-    var hair = P.byId(P.hairColors, state.colors.hair);
-    var eye  = P.byId(P.eyeColors, state.colors.eyes);
-    return {
-      "outline":     P.outline,
-      "skin.base":   skin.base,  "skin.shadow": skin.shadow,
-      "skin.light":  skin.light, "skin.blush":  skin.blush,
-      "hair.base":   hair.base,  "hair.shadow": hair.shadow, "hair.light": hair.light,
-      "eye.iris":    eye.base,   "eye.dark":    eye.shadow,  "eye.light":  eye.light,
-      "white":       P.fixed.white,
-      "mouth.inner": P.fixed.mouth,
-      "tongue":      P.fixed.tongue,
-      "metal":       P.fixed.metal,
-      "metal.shadow": P.fixed.metalShadow
-    };
-  }
-
-  function resolveColor(slot, colorMap) {
-    if (slot.charAt(0) === "#") return slot;   // hex fixo direto na legend
-    return colorMap[slot] || "#ff00ff";        // magenta = slot desconhecido (erro visível)
-  }
-
-  // ===== Desenho de uma matriz =====
-  function drawMatrix(ctx, rows, legend, offset, colorMap, dx, dy) {
-    dx = dx || 0; dy = dy || 0;
-    for (var y = 0; y < rows.length; y++) {
-      var row = rows[y];
-      for (var x = 0; x < row.length; x++) {
-        var ch = row[x];
-        if (ch === ".") continue;
-        var slot = legend[ch];
-        if (!slot) continue;
-        ctx.fillStyle = resolveColor(slot, colorMap);
-        ctx.fillRect(offset.x + x + dx, offset.y + y + dy, 1, 1);
-      }
-    }
-  }
-
-  // Escolhe o frame: override → default
-  function pickFrame(frames, wanted) {
-    if (wanted && frames[wanted]) return frames[wanted];
-    return frames.default;
-  }
-
-  // ===== Monta a lista de camadas a partir do estado =====
-  // partOverrides (opcional): troca temporária de partes p/ expressões
-  // do mascote (ex.: { eyes: "eyes_fechados", mouth: "mouth_rindo" })
-  function layersFor(state, partOverrides) {
-    var effective = {};
-    Object.keys(state.parts).forEach(function (k) { effective[k] = state.parts[k]; });
-    if (partOverrides) Object.keys(partOverrides).forEach(function (k) { effective[k] = partOverrides[k]; });
-
-    var layers = {}; // layerName → { part, isBack }
-    Object.keys(effective).forEach(function (category) {
-      var id = effective[category];
-      if (!id) return;
-      var part = AvatarCatalog.get(id);
-      if (!part || part.none) return;
-      var front = (category === "hair") ? "hairFront" : category;
-      layers[front] = { part: part, isBack: false };
-      if (part.back) {
-        var backLayer = (category === "hair") ? "hairBack" : category + "Back";
-        layers[backLayer] = { part: part, isBack: true };
-      }
-    });
-    // Cabeça sempre presente
-    layers.head = { part: AvatarCatalog.get("base_head"), isBack: false };
-    return layers;
+  // ===== Piscada sintetizada =====
+  // Fallback usado só quando os olhos NÃO têm um frame "closed"
+  // desenhado: achata a camada dos olhos contra a linha dos olhos,
+  // virando uma fresta escura — que é como um piscar aparece em
+  // pixel-art. Assim que EYES_xx_CLOSED.png existir no manifesto,
+  // o frame de verdade tem prioridade e isto deixa de rodar.
+  function drawBlink(ctx, img, dy) {
+    var s = 0.4;                                   // fator de achatamento
+    var top = Math.round(EYE_LINE * (1 - s)) + dy; // escala em torno de EYE_LINE
+    ctx.drawImage(img, 0, 0, GRID, GRID, 0, top, GRID, Math.round(GRID * s));
   }
 
   /**
    * Desenha o avatar completo.
-   * overrides (opcional, usado pelo animator e pelas expressões):
-   *   { frames: { eyes: "closed" }, dy: { brows: -1 },
-   *     parts: { eyes: "eyes_fechados", mouth: "mouth_rindo" } }
+   * overrides (opcional — usado pelo Animator e pelas Expressions):
+   *   { frames: { eyes: "closed", mouth: "smile" },
+   *     dy:     { eyebrows: -1 },
+   *     parts:  { mouth: "mouth_02" } }
+   * Um frame ou uma parte que não exista cai no padrão em vez de
+   * sumir da tela — expressão sem asset degrada, nunca quebra.
    */
   function draw(canvas, state, overrides) {
     overrides = overrides || {};
     var frameOv = overrides.frames || {};
     var dyOv = overrides.dy || {};
-    var ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    var colorMap = buildColorMap(state);
-    var layers = layersFor(state, overrides.parts);
+    var partOv = overrides.parts || {};
 
-    LAYER_ORDER.forEach(function (layerName) {
-      var entry = layers[layerName];
-      if (!entry) return;
-      var part = entry.part;
-      var source = entry.isBack ? part.back : part;
-      // categoria da camada p/ overrides (hairFront → hair)
-      var cat = part.category;
-      var rows = pickFrame(source.frames, frameOv[cat]);
-      drawMatrix(ctx, rows, source === part ? part.legend : part.back.legend,
-                 source.offset, colorMap, 0, dyOv[cat] || 0);
+    var ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    LAYER_ORDER.forEach(function (cat) {
+      var id = partOv[cat] !== undefined ? partOv[cat] : state.parts[cat];
+      // Override apontando p/ uma peça que ainda não existe no pack:
+      // mantém a peça equipada em vez de sumir com a camada.
+      if (partOv[cat] && !AvatarCatalog.get(partOv[cat])) id = state.parts[cat];
+      if (!id) return;
+
+      var part = AvatarCatalog.get(id);
+      if (!part || part.none) return;
+
+      var dy = dyOv[cat] || 0;
+      var frame = frameOv[cat];
+      var img = Assets.image(id, frame);
+
+      if (frame && !img) {
+        // Frame pedido não existe neste asset
+        var base = Assets.image(id);
+        if (!base) return;
+        if (cat === "eyes" && frame === "closed") { drawBlink(ctx, base, dy); return; }
+        img = base;   // demais frames: usa o desenho padrão
+      }
+      if (!img) return;
+
+      ctx.drawImage(img, 0, dy);
     });
   }
 
   // ===== Thumbnails (cards do carrossel e ícones de categoria) =====
-  // Renderiza a parte sobre uma cabeça-base neutra num canvas 48px.
-  function neutralState(state) {
-    return {
-      parts: {
-        hair: null, eyes: "eyes_grandes", mouth: "mouth_sorrindo",
-        brows: null, beard: null, mustache: null, glasses: null, accessory: null
-      },
-      colors: {
-        skin: state ? state.colors.skin : "skin_02",
-        hair: state ? state.colors.hair : "hairc_castanho",
-        eyes: state ? state.colors.eyes : "eyec_castanho"
-      }
-    };
+  // A parte é desenhada sobre a pele-base, para o item aparecer no
+  // contexto do rosto. Cache por id: sem paleta, o desenho é fixo.
+  function baseState(partId) {
+    var parts = {};
+    var part = partId && AvatarCatalog.get(partId);
+    parts.skin = (part && part.category === "skin")
+      ? partId
+      : AvatarCatalog.defaultFor("skin");
+    if (part && !part.none && part.category !== "skin") parts[part.category] = partId;
+    return { parts: parts };
   }
 
-  function thumbnail(partId, state) {
-    var key = partId + "|" + state.colors.skin + "|" + state.colors.hair + "|" + state.colors.eyes;
-    if (thumbCache[key]) return thumbCache[key];
+  // Nariz e boca têm pouquíssimos pixels; a 65px de largura os cards
+  // dessas categorias ficariam todos iguais (uma cabeça careca).
+  // Nelas o thumbnail dá zoom 2x no rosto — recorte quadrado de 32px
+  // centrado nas feições (x 22..54, y 19..51 da grade de arte).
+  var FACE_CROP = { x: 22, y: 19, size: 32 };
+  var ZOOMED = { eyes: true, eyebrows: true, nose: true, mouth: true };
 
-    var canvas = document.createElement("canvas");
-    canvas.width = GRID; canvas.height = GRID;
-    var part = AvatarCatalog.get(partId);
-    var thumbState = neutralState(state);
+  function thumbnail(partId) {
+    if (thumbCache[partId]) return thumbCache[partId];
 
-    if (part && !part.none) {
-      // rosto neutro + a parte em questão (substitui a da mesma categoria)
-      thumbState.parts[part.category] = partId;
-      // partes de rosto ficam mais legíveis sem cabelo por cima
-      if (part.category !== "hair") thumbState.parts.hair = null;
+    var part = partId && AvatarCatalog.get(partId);
+    var zoom = part && ZOOMED[part.category];
+
+    // Composição em tamanho real...
+    var full = document.createElement("canvas");
+    full.width = GRID; full.height = GRID;
+    draw(full, baseState(partId));
+
+    // ...e, se for categoria de detalhe, recorta o rosto em 2x
+    var canvas = full;
+    if (zoom) {
+      canvas = document.createElement("canvas");
+      canvas.width = FACE_CROP.size * 2;
+      canvas.height = FACE_CROP.size * 2;
+      var ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(full, FACE_CROP.x, FACE_CROP.y, FACE_CROP.size, FACE_CROP.size,
+                    0, 0, canvas.width, canvas.height);
     }
-    draw(canvas, thumbState);
-    thumbCache[key] = canvas;
+
+    thumbCache[partId] = canvas;
     return canvas;
   }
 
@@ -162,22 +135,18 @@ window.Renderer = (function () {
 
   // Avatar aleatório (usado na gallery e no botão de sorte)
   function randomState() {
-    var P = window.Palettes;
     function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
     var parts = {};
     AvatarCatalog.CATEGORIES.forEach(function (cat) {
-      if (cat.swatchOnly) return;
       var items = AvatarCatalog.list(cat.id);
       if (items.length) parts[cat.id] = pick(items).id;
     });
-    return {
-      parts: parts,
-      colors: { skin: pick(P.skins).id, hair: pick(P.hairColors).id, eyes: pick(P.eyeColors).id }
-    };
+    return { parts: parts };
   }
 
   return {
     GRID: GRID,
+    LAYER_ORDER: LAYER_ORDER,
     draw: draw,
     thumbnail: thumbnail,
     clearThumbCache: clearThumbCache,

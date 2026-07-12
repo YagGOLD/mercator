@@ -69,22 +69,27 @@ window.App = (function () {
   }
 
   // ===== Boot =====
-  var saved = Store.loadAvatar();
-  // Itens equipados antes de virarem bloqueados ficam liberados
-  if (saved) Progress.grandfatherEquipped(saved, Progress.load());
+  // O avatar é composto por PNGs e o Renderer desenha de forma
+  // síncrona (inclusive dentro do requestAnimationFrame do Animator),
+  // então o app só entra depois que os assets estão em memória.
+  Assets.preload(function () {
+    var saved = Store.loadAvatar();
+    // Itens equipados antes de virarem bloqueados ficam liberados
+    if (saved) Progress.grandfatherEquipped(saved, Progress.load());
 
-  function enter() {
-    if (!saved) { openCreator(Store.defaultAvatar()); return; }
-    // Deep-links: #lista/<id> abre a lista; #comparador abre o comparador
-    var deepLink = location.hash.match(/^#lista\/(.+)$/);
-    if (deepLink && Shopping.getList(deepLink[1])) openList(deepLink[1]);
-    else if (location.hash === "#comparador") openCompare();
-    else openHome();
-  }
+    function enter() {
+      if (!saved) { openCreator(Store.defaultAvatar()); return; }
+      // Deep-links: #lista/<id> abre a lista; #comparador abre o comparador
+      var deepLink = location.hash.match(/^#lista\/(.+)$/);
+      if (deepLink && Shopping.getList(deepLink[1])) openList(deepLink[1]);
+      else if (location.hash === "#comparador") openCompare();
+      else openHome();
+    }
 
-  // 1º acesso: convite de contribuição (opcional, nunca bloqueia)
-  if (!Donation.wasSeen()) openDonate(enter);
-  else enter();
+    // 1º acesso: convite de contribuição (opcional, nunca bloqueia)
+    if (!Donation.wasSeen()) openDonate(enter);
+    else enter();
+  });
 
   // Service worker: só em HTTPS (GitHub Pages, etapa E7). Em file://
   // e IP local o app já é 100% offline por não depender de rede.

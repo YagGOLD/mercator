@@ -579,3 +579,25 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 .eco-ico.red { background: rgba(221,75,108,.12); color: #dd4b6c; }
 .eco-ico.violet { background: rgba(135,104,232,.14); color: #8768e8; }
 .hero-avatar, .sum-mascot-big { box-shadow: 0 0 24px rgba(2,246,124,.14); }
+
+/* ===== Renomear compra (título da lista + lápis no card da Home) ===== */
+.list-top strong { cursor: pointer; }
+.title-input {
+  flex: 1; min-width: 0;
+  padding: 6px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 1rem; font-weight: 700;
+}
+.icon-edit, .list-edit {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: transparent; border: none;
+  color: var(--faint);
+  border-radius: 50%;
+}
+.icon-edit { width: 32px; height: 32px; }
+.list-edit { width: 26px; height: 26px; }
+.icon-edit:hover, .list-edit:hover { color: var(--accent); background: var(--surface2); }

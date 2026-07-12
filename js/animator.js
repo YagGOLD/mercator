@@ -4,9 +4,14 @@
    dirty flag: só redesenha quando algum estado visual muda.
    - Piscar: frame "closed" dos olhos por ~130ms a cada 3–7s
    - Sobrancelha: camada sobe 1px por ~400ms a cada ~12s
-   - Sorriso: frame "smile" (se a boca tiver) por 1.5s a cada 15–30s
+   - Sorriso: frame "smile" da boca por 1.5s a cada 15–30s
+     (só se o asset existir — ver js/parts/new-avatar.js)
    - Head-bob: CSS puro no wrapper (não passa por aqui)
    Respeita prefers-reduced-motion.
+
+   Duas camadas de override: "idle" (piscar/sobrancelha/sorriso) e
+   "expr" (expressão temporária). A expressão tem prioridade, mas
+   as duas coexistem — piscar durante uma expressão continua valendo.
    ============================================================ */
 
 window.Animator = (function () {
@@ -16,7 +21,8 @@ window.Animator = (function () {
   var running = false;
   var session = 0;    // invalida loops antigos quando attach() é chamado de novo
   var dirty = false;
-  var overrides = { frames: {}, dy: {} };
+  var idle = { frames: {}, dy: {} };
+  var expr = null;    // { frames, dy, parts } enquanto uma expressão toca
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var next = { blink: 0, blinkEnd: 0, brow: 0, browEnd: 0, smile: 0, smileEnd: 0 };
@@ -27,6 +33,17 @@ window.Animator = (function () {
     next.blink = now + rand(3000, 7000);
     next.brow = now + rand(9000, 15000);
     next.smile = now + rand(15000, 30000);
+  }
+
+  // Junta idle + expressão num único objeto de overrides p/ o Renderer
+  function merged() {
+    if (!expr) return idle;
+    var out = { frames: {}, dy: {}, parts: expr.parts || {} };
+    Object.keys(idle.frames).forEach(function (k) { out.frames[k] = idle.frames[k]; });
+    Object.keys(idle.dy).forEach(function (k) { out.dy[k] = idle.dy[k]; });
+    Object.keys(expr.frames || {}).forEach(function (k) { out.frames[k] = expr.frames[k]; });
+    Object.keys(expr.dy || {}).forEach(function (k) { out.dy[k] = expr.dy[k]; });
+    return out;
   }
 
   function makeTick(mySession) {
@@ -40,31 +57,30 @@ window.Animator = (function () {
   function step(now) {
 
     if (!reduced) {
-      // Piscar
+      // Piscar (sem asset "closed", o Renderer sintetiza a piscada)
       if (next.blinkEnd && now >= next.blinkEnd) {
-        delete overrides.frames.eyes; next.blinkEnd = 0;
+        delete idle.frames.eyes; next.blinkEnd = 0;
         next.blink = now + rand(3000, 7000); dirty = true;
       } else if (now >= next.blink && !next.blinkEnd) {
-        overrides.frames.eyes = "closed";
+        idle.frames.eyes = "closed";
         next.blinkEnd = now + 130; dirty = true;
       }
       // Sobrancelha
       if (next.browEnd && now >= next.browEnd) {
-        delete overrides.dy.brows; next.browEnd = 0;
+        delete idle.dy.eyebrows; next.browEnd = 0;
         next.brow = now + rand(9000, 15000); dirty = true;
       } else if (now >= next.brow && !next.browEnd) {
-        overrides.dy.brows = -1;
+        idle.dy.eyebrows = -1;
         next.browEnd = now + 400; dirty = true;
       }
-      // Sorriso ocasional (só se a boca atual tiver frame "smile")
+      // Sorriso ocasional (só se a boca atual tiver o frame "smile")
       if (next.smileEnd && now >= next.smileEnd) {
-        delete overrides.frames.mouth; next.smileEnd = 0;
+        delete idle.frames.mouth; next.smileEnd = 0;
         next.smile = now + rand(15000, 30000); dirty = true;
       } else if (now >= next.smile && !next.smileEnd) {
-        var state = getState();
-        var mouth = state.parts.mouth && AvatarCatalog.get(state.parts.mouth);
-        if (mouth && !mouth.none && mouth.frames.smile) {
-          overrides.frames.mouth = "smile";
+        var mouthId = getState().parts.mouth;
+        if (mouthId && Assets.hasFrame(mouthId, "smile")) {
+          idle.frames.mouth = "smile";
           next.smileEnd = now + 1500;
           dirty = true;
         } else {
@@ -74,7 +90,7 @@ window.Animator = (function () {
     }
 
     if (dirty) {
-      Renderer.draw(canvas, getState(), overrides);
+      Renderer.draw(canvas, getState(), merged());
       dirty = false;
     }
   }
@@ -87,7 +103,8 @@ window.Animator = (function () {
       running = true;
       session++;
       dirty = true;
-      overrides = { frames: {}, dy: {} };
+      idle = { frames: {}, dy: {} };
+      expr = null;
       schedule(performance.now());
       requestAnimationFrame(makeTick(session));
     },
@@ -98,12 +115,11 @@ window.Animator = (function () {
     playExpression: function (name, ms) {
       var ov = Expressions.overridesFor(name);
       if (!ov) return;
-      overrides.parts = ov.parts;
+      expr = ov;
       dirty = true;
       clearTimeout(this._exprTimer);
-      var self = this;
       this._exprTimer = setTimeout(function () {
-        delete overrides.parts;
+        expr = null;
         dirty = true;
       }, ms || 1800);
     },

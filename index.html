@@ -36,7 +36,7 @@
     <div class="stage">
       <div class="stage-title">Monte seu mascote!</div>
       <div class="avatar-wrap" id="avatarWrap">
-        <canvas id="avatarCanvas" width="48" height="48"></canvas>
+        <canvas id="avatarCanvas" width="65" height="65"></canvas>
         <div class="avatar-shadow"></div>
       </div>
       <div class="speech-bubble hidden" id="speechBubble"></div>
@@ -46,7 +46,6 @@
       <div class="cat-row" id="catRow"></div>
       <div class="cat-label" id="catLabel"></div>
       <div class="item-row" id="itemRow"></div>
-      <div class="swatch-row hidden" id="swatchRow"></div>
       <button class="btn-primary" id="btnSave">Salvar</button>
       <button class="btn-ghost" id="btnSkip" style="align-self:center">Pular por enquanto</button>
     </div>
@@ -70,7 +69,7 @@
         </span>
       </div>
       <div class="hero-card">
-        <div class="hero-avatar"><canvas id="homeAvatarCanvas" width="48" height="48"></canvas></div>
+        <div class="hero-avatar"><canvas id="homeAvatarCanvas" width="65" height="65"></canvas></div>
         <div class="hero-text">
           <strong id="homeGreeting">Bem-vindo!</strong>
           <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
@@ -139,10 +138,17 @@
   <div id="screenList" class="screen hidden">
     <div class="list-top">
       <button class="icon-back" id="btnBack" aria-label="Voltar">‹</button>
-      <strong id="listTitle"></strong>
+      <strong id="listTitle" title="Renomear compra"></strong>
+      <input id="listTitleInput" class="title-input hidden" maxlength="40" aria-label="Nome da compra">
+      <button class="icon-edit" id="btnRenameList" title="Renomear compra" aria-label="Renomear compra">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
       <span class="status-badge" id="listStatus"></span>
       <div class="list-mascot-wrap">
-        <canvas id="listMascot" width="48" height="48"></canvas>
+        <canvas id="listMascot" width="65" height="65"></canvas>
       </div>
     </div>
     <div class="list-bubble hidden" id="listBubble"></div>
@@ -163,7 +169,7 @@
 
     <div class="overlay hidden" id="summaryOverlay">
       <div class="summary-big" id="summaryBox">
-        <div class="sum-mascot-big"><canvas id="sumMascot" width="48" height="48"></canvas></div>
+        <div class="sum-mascot-big"><canvas id="sumMascot" width="65" height="65"></canvas></div>
         <div class="sum-bubble" id="sumBubble"></div>
         <span class="sum-total-label">Total a pagar</span>
         <div class="sum-total" id="sumSpent"></div>
@@ -214,14 +220,8 @@
 <!-- Ordem importa: dados → motor → UI → boot (escopo global, sem modules p/ funcionar em file://) -->
 <script src="js/palettes.js"></script>
 <script src="js/catalog.js"></script>
-<script src="js/parts/base-head.js"></script>
-<script src="js/parts/hair.js"></script>
-<script src="js/parts/eyes.js"></script>
-<script src="js/parts/mouths.js"></script>
-<script src="js/parts/brows.js"></script>
-<script src="js/parts/facial-hair.js"></script>
-<script src="js/parts/glasses.js"></script>
-<script src="js/parts/accessories.js"></script>
+<script src="js/parts/new-avatar.js"></script>
+<script src="js/assets.js"></script>
 <script src="js/renderer.js"></script>
 <script src="js/expressions.js"></script>
 <script src="js/animator.js"></script>

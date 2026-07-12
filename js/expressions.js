@@ -1,23 +1,33 @@
 /* ============================================================
    Mercator — Expressões do mascote
-   Presets que combinam olhos + boca + sobrancelha do catálogo.
-   O mascote "interage" trocando de expressão quando o usuário
-   usa o app (marcar item, concluir compra, desbloquear...).
+   O mascote "interage" trocando de expressão quando o usuário usa
+   o app (marcar item, concluir compra, desbloquear...).
+
+   No motor de imagens, uma expressão é uma combinação de:
+     frames → troca o desenho de uma camada (olhos "closed", boca "smile")
+     dy     → desloca a camada em pixels (sobrancelha sobe = surpresa)
+     parts  → troca a peça inteira (ex.: uma boca sorridente própria)
+
+   O pack atual tem um desenho por categoria, então as expressões se
+   apoiam no que dá para fazer sem arte nova (sobrancelha e piscada).
+   Assim que MOUTH_01_SMILE.png / EYES_01_CLOSED.png forem desenhados
+   e declarados no manifesto, estas mesmas expressões ganham a arte
+   automaticamente — sem tocar neste arquivo.
    ============================================================ */
 
 window.Expressions = (function () {
 
   var PRESETS = {
-    neutro:      { eyes: "eyes_grandes",     mouth: "mouth_neutra",   brows: "brows_reta" },
-    sorrindo:    { eyes: "eyes_sorrindo",    mouth: "mouth_sorrindo", brows: "brows_reta" },
-    feliz:       { eyes: "eyes_felizes",     mouth: "mouth_feliz",    brows: "brows_arqueada" },
-    surpreso:    { eyes: "eyes_redondos",    mouth: "mouth_surpresa", brows: "brows_preocupada" },
-    rindo:       { eyes: "eyes_fechados",    mouth: "mouth_rindo",    brows: "brows_arqueada" },
-    determinado: { eyes: "eyes_determinado", mouth: "mouth_neutra",   brows: "brows_brava" }
+    neutro:      {},
+    sorrindo:    { frames: { mouth: "smile" },                    dy: { eyebrows: -1 } },
+    feliz:       { frames: { mouth: "smile" },                    dy: { eyebrows: -2 } },
+    surpreso:    {                                                dy: { eyebrows: -2 } },
+    rindo:       { frames: { eyes: "closed", mouth: "smile" },    dy: { eyebrows: -2 } },
+    determinado: {                                                dy: { eyebrows:  1 } }
   };
 
   function overridesFor(name) {
-    return PRESETS[name] ? { parts: PRESETS[name] } : null;
+    return PRESETS[name] || null;
   }
 
   // Toca uma expressão num canvas estático (lista, resumo, home).

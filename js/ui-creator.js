@@ -1,8 +1,13 @@
 /* ============================================================
    Mercator — UI do Criador de Avatar
-   Categorias em botões com thumbnail, carrossel de itens com
-   scroll-snap, swatches de cor. Toda mudança redesenha o avatar
-   na hora (sem confirmação), conforme a spec.
+   Categorias em botões com thumbnail e carrossel de itens com
+   scroll-snap. Toda mudança redesenha o avatar na hora (sem
+   confirmação), conforme a spec.
+
+   As cores agora vêm prontas na arte (pack New_Avatar), então a
+   fileira de swatches de paleta saiu: personalizar = escolher a
+   peça de cada categoria (inclusive o tom de pele, que virou uma
+   categoria de peças como as outras).
    ============================================================ */
 
 window.UICreator = (function () {
@@ -32,7 +37,6 @@ window.UICreator = (function () {
       catRow: $("catRow"),
       catLabel: $("catLabel"),
       itemRow: $("itemRow"),
-      swatchRow: $("swatchRow"),
       btnSave: $("btnSave"),
       btnSkip: $("btnSkip")
     };
@@ -71,17 +75,8 @@ window.UICreator = (function () {
       btn.title = cat.name;
       btn.setAttribute("aria-label", cat.name);
 
-      if (cat.swatchOnly) {
-        // Pele: bolinha com o tom atual
-        var dot = document.createElement("span");
-        dot.className = "swatch-icon";
-        dot.style.background = Palettes.byId(Palettes.skins, state.colors.skin).base;
-        btn.appendChild(dot);
-      } else {
-        var iconId = state.parts[cat.id] || AvatarCatalog.defaultFor(cat.id);
-        var src = Renderer.thumbnail(iconId || "base_head", state);
-        btn.appendChild(cloneCanvas(src));
-      }
+      var iconId = state.parts[cat.id] || AvatarCatalog.defaultFor(cat.id);
+      btn.appendChild(cloneCanvas(Renderer.thumbnail(iconId)));
 
       btn.onclick = function () { selectCategory(cat.id); };
       els.catRow.appendChild(btn);
@@ -106,16 +101,22 @@ window.UICreator = (function () {
     });
 
     buildItems(cat);
-    buildSwatches(cat);
   }
 
   // ===== Carrossel de itens =====
   function buildItems(cat) {
     els.itemRow.innerHTML = "";
-    if (cat.swatchOnly) { els.itemRow.classList.add("hidden"); return; }
-    els.itemRow.classList.remove("hidden");
 
-    AvatarCatalog.list(cat.id).forEach(function (part) {
+    var items = AvatarCatalog.list(cat.id);
+    if (!items.length) {
+      var hint = document.createElement("span");
+      hint.className = "item-empty";
+      hint.textContent = "Nenhum item nesta categoria ainda.";
+      els.itemRow.appendChild(hint);
+      return;
+    }
+
+    items.forEach(function (part) {
       var card = document.createElement("button");
       var isSelected = state.parts[cat.id] === part.id ||
                        (part.none && state.parts[cat.id] === null);
@@ -128,7 +129,7 @@ window.UICreator = (function () {
         icon.textContent = "×";
         card.appendChild(icon);
       } else {
-        card.appendChild(cloneCanvas(Renderer.thumbnail(part.id, state)));
+        card.appendChild(cloneCanvas(Renderer.thumbnail(part.id)));
       }
 
       var name = document.createElement("span");
@@ -168,32 +169,6 @@ window.UICreator = (function () {
         buildCategoryBar();     // atualiza ícone da categoria
       };
       els.itemRow.appendChild(card);
-    });
-  }
-
-  // ===== Swatches de cor =====
-  function buildSwatches(cat) {
-    var group = cat.colorable; // "skin" | "hair" | "eyes" | null
-    if (!group) { els.swatchRow.classList.add("hidden"); return; }
-
-    var lists = { skin: Palettes.skins, hair: Palettes.hairColors, eyes: Palettes.eyeColors };
-    els.swatchRow.classList.remove("hidden");
-    els.swatchRow.innerHTML = "";
-
-    lists[group].forEach(function (color) {
-      var sw = document.createElement("button");
-      sw.className = "swatch" + (state.colors[group] === color.id ? " selected" : "");
-      sw.style.background = color.base;
-      sw.title = color.name;
-      sw.setAttribute("aria-label", color.name);
-      sw.onclick = function () {
-        state.colors[group] = color.id;
-        Animator.redraw();
-        buildSwatches(cat);
-        buildItems(cat);        // thumbnails na cor nova
-        buildCategoryBar();
-      };
-      els.swatchRow.appendChild(sw);
     });
   }
 

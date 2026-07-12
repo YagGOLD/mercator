@@ -252,3 +252,6 @@
 .dev-label { color: var(--faint); font-size: .64rem; letter-spacing: .06em; }
 .dev-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .dev-row .btn-ghost { border: 1px solid var(--border); font-size: .78rem; }
+
+/* Categoria ainda sem nenhum asset no pack */
+.item-empty { color: var(--muted); font-size: .8rem; padding: 14px 4px; }

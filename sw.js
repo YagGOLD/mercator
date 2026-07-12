@@ -5,7 +5,7 @@
    versão do cache para forçar atualização.
    ============================================================ */
 
-var CACHE = "mercator-v22";
+var CACHE = "mercator-v23";
 
 var FILES = [
   ".",
@@ -16,14 +16,8 @@ var FILES = [
   "css/shopping.css",
   "js/palettes.js",
   "js/catalog.js",
-  "js/parts/base-head.js",
-  "js/parts/hair.js",
-  "js/parts/eyes.js",
-  "js/parts/mouths.js",
-  "js/parts/brows.js",
-  "js/parts/facial-hair.js",
-  "js/parts/glasses.js",
-  "js/parts/accessories.js",
+  "js/parts/new-avatar.js",
+  "js/assets.js",
   "js/renderer.js",
   "js/expressions.js",
   "js/animator.js",
@@ -41,7 +35,19 @@ var FILES = [
   "js/app.js",
   "icons/icon-192.png",
   "icons/icon-512.png",
-  "icons/pix-qr.png"
+  "icons/pix-qr.png",
+
+  // ===== Assets do avatar (pack New_Avatar) =====
+  // Ao adicionar uma variante nova (ex.: HAIR_02.png), inclua o
+  // arquivo aqui E incremente a versão do CACHE acima — senão ela
+  // não fica disponível offline.
+  "New_Avatar/SKIN/SKIN_01.png",
+  "New_Avatar/HAIR/HAIR_01.png",
+  "New_Avatar/EYES/EYES_01.png",
+  "New_Avatar/EYEBROWS/EYEBROWN_01.png",
+  "New_Avatar/NOSE/NOSE_01.png",
+  "New_Avatar/MOUTH/MOUTH_01.png",
+  "New_Avatar/CLOTH/CLOTH_01.png"
 ];
 
 self.addEventListener("install", function (e) {

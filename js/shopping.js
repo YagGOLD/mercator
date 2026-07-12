@@ -53,6 +53,31 @@ window.Shopping = (function () {
     saveLists(loadLists().filter(function (l) { return l.id !== id; }));
   }
 
+  // Renomeia a compra — só o nome muda; itens, preços, status e
+  // datas ficam intactos. O histórico guarda um snapshot do nome
+  // (é o que alimenta os painéis da Home), então a linha da compra
+  // concluída é atualizada junto: as duas fontes não podem divergir.
+  // Devolve a lista atualizada, ou null se o nome for vazio.
+  function renameList(id, name) {
+    var clean = String(name || "").trim().slice(0, 40);
+    if (!clean) return null;
+    var list = getList(id);
+    if (!list) return null;
+
+    list.name = clean;
+    updateList(list);
+
+    if (list.concludedAt) {
+      var h = loadHistory();
+      var touched = false;
+      h.forEach(function (c) {
+        if (c.date === list.concludedAt) { c.name = clean; touched = true; }
+      });
+      if (touched) saveHistory(h);
+    }
+    return list;
+  }
+
   // Cria uma lista nova copiando os itens de outra (compra recorrente).
   // O previsto da nova = o PAGO da anterior: assim a economia da
   // próxima compra mede a variação real de preço entre as idas.
@@ -239,6 +264,7 @@ window.Shopping = (function () {
     createList: createList,
     createFrom: createFrom,
     removeList: removeList,
+    renameList: renameList,
     addItem: addItem,
     removeItem: removeItem,
     totals: totals,

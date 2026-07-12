@@ -1,8 +1,15 @@
 /* ============================================================
    Mercator — Persistência do avatar (localStorage)
-   Schema versionado + trilho de migração + saneamento: um id
-   que não exista mais no catálogo (após updates futuros) cai
-   no default da categoria — a renderização nunca quebra.
+   Schema versionado + trilho de migração + saneamento: um id que
+   não exista mais no catálogo cai no default da categoria — a
+   renderização nunca quebra.
+
+   v1 → v2: troca do avatar procedural (matrizes de pixel, peças
+   como "hair_franja" + paletas de cor) pelo pack de pixel-art
+   New_Avatar (peças como "hair_01", cores embutidas na arte).
+   Os ids antigos não existem mais e o bloco "colors" perdeu a
+   função, então o avatar salvo volta para o padrão do pack novo.
+
    Nome "Store" (não "Storage") para não sombrear a interface
    nativa window.Storage do navegador.
    ============================================================ */
@@ -10,21 +17,28 @@
 window.Store = (function () {
 
   var KEY = "mercator.avatar";
-  var CURRENT_VERSION = 1;
+  var CURRENT_VERSION = 2;
 
-  // Migrações futuras: migrations[2] = function (dadosV1) { ...retorna dadosV2 }
-  var migrations = {};
+  var migrations = {
+    // Avatar do motor antigo: nenhuma peça é aproveitável (outro
+    // estilo, outra grade). Preserva só o meta (createdAt/skipped).
+    2: function (v1) {
+      return {
+        schemaVersion: 2,
+        parts: {},                 // sanitize() preenche com os defaults
+        meta: v1.meta || {}
+      };
+    }
+  };
 
   function defaultAvatar() {
     var parts = {};
     AvatarCatalog.CATEGORIES.forEach(function (cat) {
-      if (cat.swatchOnly) return;
       parts[cat.id] = AvatarCatalog.defaultFor(cat.id);
     });
     return {
       schemaVersion: CURRENT_VERSION,
       parts: parts,
-      colors: { skin: "skin_02", hair: "hairc_castanho", eyes: "eyec_castanho" },
       meta: { createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
     };
   }
@@ -34,15 +48,9 @@ window.Store = (function () {
     if (data.parts) {
       Object.keys(clean.parts).forEach(function (cat) {
         var id = data.parts[cat];
-        if (id === null) { clean.parts[cat] = null; return; }
+        if (id === null) { clean.parts[cat] = null; return; }   // categoria opcional: "Nenhum"
         clean.parts[cat] = AvatarCatalog.get(id) ? id : AvatarCatalog.defaultFor(cat);
       });
-    }
-    if (data.colors) {
-      var P = window.Palettes;
-      clean.colors.skin = P.byId(P.skins, data.colors.skin).id;
-      clean.colors.hair = P.byId(P.hairColors, data.colors.hair).id;
-      clean.colors.eyes = P.byId(P.eyeColors, data.colors.eyes).id;
     }
     if (data.meta) clean.meta = data.meta;
     clean.schemaVersion = CURRENT_VERSION;

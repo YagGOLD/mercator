@@ -20,7 +20,13 @@ window.UIList = (function () {
     if (!list) { App.openHome(); return; }
     mode = list.status;
 
+    // Título sempre entra em modo leitura (a tela pode ter sido
+    // deixada com o campo de renomear aberto)
+    renaming = false;
     $("listTitle").textContent = list.name;
+    $("listTitle").classList.remove("hidden");
+    $("listTitleInput").classList.add("hidden");
+
     $("listStatus").textContent =
       mode === "aberta" ? "planejando" : mode === "mercado" ? "no mercado" : "concluída";
     Renderer.draw($("listMascot"), Store.loadAvatar() || Store.defaultAvatar());
@@ -34,6 +40,44 @@ window.UIList = (function () {
     wire();
 
     if (mode === "mercado") say("Boa compra! Vá marcando o que pegar.");
+  }
+
+  // ===== Renomear a compra (edição inline no título) =====
+  // Só o nome muda — itens, preços e status ficam intactos.
+  var renaming = false;
+
+  function startRename() {
+    if (renaming) return;
+    renaming = true;
+    var input = $("listTitleInput");
+    input.value = list.name;
+    $("listTitle").classList.add("hidden");
+    input.classList.remove("hidden");
+    input.focus();
+    input.select();
+  }
+
+  // save=false → cancelou (Esc). Sair do campo clicando fora salva.
+  function commitRename(save) {
+    if (!renaming) return;
+    renaming = false;
+    var input = $("listTitleInput");
+
+    if (save) {
+      var updated = Shopping.renameList(list.id, input.value);
+      if (updated) {
+        // Mantém o MESMO objeto em memória: as linhas já renderizadas
+        // guardam referência para os itens dele.
+        list.name = updated.name;
+        $("listTitle").textContent = list.name;
+        Toast.show("Compra renomeada.", "ok");
+      } else {
+        Toast.show("O nome não pode ficar vazio.", "warn");
+      }
+    }
+
+    input.classList.add("hidden");
+    $("listTitle").classList.remove("hidden");
   }
 
   function say(text) {
@@ -315,6 +359,16 @@ window.UIList = (function () {
     $("addName").onkeydown = function (e) { if (e.key === "Enter") addFromInputs(); };
     $("btnConclude").onclick = primaryAction;
     $("btnSummaryClose").onclick = function () { App.openHome(); };
+
+    // Renomear: lápis ou toque no próprio título
+    $("btnRenameList").onclick = startRename;
+    $("listTitle").onclick = startRename;
+    var input = $("listTitleInput");
+    input.onkeydown = function (e) {
+      if (e.key === "Enter") commitRename(true);
+      else if (e.key === "Escape") commitRename(false);
+    };
+    input.onblur = function () { commitRename(true); };
   }
 
   return { open: open };

@@ -72,7 +72,6 @@ window.Progress = (function () {
   function itemsUnlockedAtLevel(level) {
     var found = [];
     AvatarCatalog.CATEGORIES.forEach(function (cat) {
-      if (cat.swatchOnly) return;
       AvatarCatalog.list(cat.id).forEach(function (part) {
         if (part.locked && part.unlockedBy &&
             part.unlockedBy.type === "level" && part.unlockedBy.value === level) {
