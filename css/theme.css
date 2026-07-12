@@ -88,6 +88,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--radius);
 }
 
+/* Acessibilidade: "Reduzir Movimento" (iOS) / "prefers-reduced-motion".
+   ATENÇÃO ao iteration-count: sem ele, uma animação `infinite` (o
+   headBob do mascote) não para — ela passa a durar .01ms e REPETIR
+   infinitamente, o que faz o elemento VIBRAR em vez de ficar parado. */
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
