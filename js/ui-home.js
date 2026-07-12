@@ -42,7 +42,11 @@ window.UIHome = (function () {
                 location.search.indexOf("dev=1") !== -1;
     document.querySelector(".dev-panel").classList.toggle("hidden", !isDev);
 
-    $("copyOverlay").classList.add("hidden");   // a Home sempre entra limpa
+    // A Home sempre entra limpa (nenhum diálogo aberto, aviso recolhido)
+    $("copyOverlay").classList.add("hidden");
+    $("importOverlay").classList.add("hidden");
+    $("dataHint").classList.add("hidden");
+    $("btnDataInfo").setAttribute("aria-expanded", "false");
 
     renderEconomy();
     renderLists();
@@ -206,6 +210,7 @@ window.UIHome = (function () {
     var h = Shopping.syncHistory();
     var total = h.reduce(function (s, c) { return s + (c.savings || 0); }, 0);
     var spent = h.reduce(function (s, c) { return s + (c.spent || 0); }, 0);
+
     $("ecoTotal").textContent = Shopping.fmt(total);
     // Última compra = o que foi GASTO nela (economia dela aparece no card)
     $("ecoLast").textContent = h.length ? Shopping.fmt(h[0].spent || 0) : "—";
@@ -307,6 +312,58 @@ window.UIHome = (function () {
     App.openList(list.id);
   }
 
+  // ===== Exportar / Importar (backup) =====
+  var pendingImport = null;   // backup lido, aguardando o "Sim, importar"
+
+  function doExport() {
+    Backup.exportData().then(function (via) {
+      if (via === "cancel") return;
+      Toast.show(via === "share"
+        ? "Backup pronto — escolha onde salvar ou enviar."
+        : "Backup salvo na pasta de downloads.", "ok");
+    });
+  }
+
+  function onFileChosen(e) {
+    var file = e.target.files && e.target.files[0];
+    e.target.value = "";                 // permite reescolher o MESMO arquivo depois
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function () {
+      var r = Backup.parse(String(reader.result));
+      if (!r.ok) { Toast.show(r.erro, "warn"); return; }
+
+      pendingImport = r.payload;
+      var s = r.resumo;
+      var quando = new Date(s.data);
+      $("importSummary").innerHTML =
+        '<div class="imp-line"><span>Feito em</span><b>' +
+          (isNaN(quando) ? "—" : quando.toLocaleDateString("pt-BR")) + '</b></div>' +
+        '<div class="imp-line"><span>Listas</span><b>' + s.listas + '</b></div>' +
+        '<div class="imp-line"><span>Compras no histórico</span><b>' + s.compras + '</b></div>' +
+        '<div class="imp-line"><span>Progresso</span><b>Nível ' + s.nivel +
+          ' · ◆ ' + s.gemas + '</b></div>';
+      $("importOverlay").classList.remove("hidden");
+    };
+    reader.onerror = function () { Toast.show("Não consegui ler o arquivo.", "warn"); };
+    reader.readAsText(file);
+  }
+
+  function closeImport() {
+    $("importOverlay").classList.add("hidden");
+    pendingImport = null;
+  }
+
+  function doImport() {
+    if (!pendingImport) return;
+    Backup.restore(pendingImport);
+    pendingImport = null;
+    // Recarrega: o boot relê avatar, progresso e listas do zero, sem
+    // sobrar nada do estado antigo em memória.
+    location.reload();
+  }
+
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -318,6 +375,25 @@ window.UIHome = (function () {
       App.openCreator(Store.loadAvatar() || Store.defaultAvatar());
     };
     $("btnCompare").onclick = function () { App.openCompare(); };
+    $("btnHistory").onclick = function () { App.openHistory(); };
+
+    // "Importante": o aviso de que os dados vivem só neste aparelho fica
+    // recolhido — quem quiser entender por que exportar, abre.
+    $("btnDataInfo").onclick = function () {
+      var hint = $("dataHint");
+      var aberto = hint.classList.toggle("hidden") === false;
+      $("btnDataInfo").setAttribute("aria-expanded", String(aberto));
+    };
+
+    // Backup: exportar baixa/compartilha o .json; importar SUBSTITUI tudo
+    $("btnExport").onclick = doExport;
+    $("btnImport").onclick = function () { $("importFile").click(); };
+    $("importFile").onchange = onFileChosen;
+    $("btnImportCancel").onclick = closeImport;
+    $("btnImportOk").onclick = doImport;
+    $("importOverlay").onclick = function (e) {
+      if (e.target === $("importOverlay")) closeImport();
+    };
     $("btnDonate").onclick = function () { App.openDonate(function () { App.openHome(); }); };
 
     // A linha de criação fica sempre visível; o botão foca o campo
@@ -334,6 +410,7 @@ window.UIHome = (function () {
     $("copyOverlay").onclick = function (e) {
       if (e.target === $("copyOverlay")) closeCopyPicker();
     };
+
 
     // "Criar" abre uma lista em branco. Copiar de outra compra é o
     // caminho do botão "Copiar lista salva" (openCopyPicker).

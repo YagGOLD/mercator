@@ -17,6 +17,8 @@
   --on-accent: #04170c;     /* texto sobre verde */
   --blue: #02c3f6;          /* gemas / info */
   --warn: #fbbf24;
+  --danger: #dd4b6c;        /* ações destrutivas (limpar histórico) */
+  --danger-soft: rgba(221,75,108,.12);
   --text: #f2f5f3;
   --muted: #8a938d;
   --faint: #565e58;

@@ -11,6 +11,7 @@ window.App = (function () {
     home: document.getElementById("screenHome"),
     list: document.getElementById("screenList"),
     compare: document.getElementById("screenCompare"),
+    history: document.getElementById("screenHistory"),
     donate: document.getElementById("screenDonate")
   };
 
@@ -62,6 +63,12 @@ window.App = (function () {
     UICompare.open();
   }
 
+  function openHistory() {
+    show("history");
+    Animator.detach();
+    UIHistory.open();
+  }
+
   function openDonate(next) {
     show("donate");
     Animator.detach();
@@ -83,6 +90,7 @@ window.App = (function () {
       var deepLink = location.hash.match(/^#lista\/(.+)$/);
       if (deepLink && Shopping.getList(deepLink[1])) openList(deepLink[1]);
       else if (location.hash === "#comparador") openCompare();
+      else if (location.hash === "#historico") openHistory();
       else openHome();
     }
 
@@ -98,5 +106,5 @@ window.App = (function () {
   }
 
   return { openCreator: openCreator, openHome: openHome, openList: openList,
-           openCompare: openCompare, openDonate: openDonate };
+           openCompare: openCompare, openHistory: openHistory, openDonate: openDonate };
 })();

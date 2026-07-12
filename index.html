@@ -86,7 +86,10 @@
       <div class="home-section">
         <div class="section-head">
           <span>Sua economia</span>
-          <button class="btn-ghost" id="btnCompare">Comparador</button>
+          <span class="head-actions">
+            <button class="btn-ghost" id="btnHistory">Histórico</button>
+            <button class="btn-ghost" id="btnCompare">Comparador</button>
+          </span>
         </div>
         <div class="eco-row">
           <div class="eco-tile">
@@ -130,6 +133,34 @@
         <div id="missionsBox"></div>
       </div>
 
+      <div class="home-section">
+        <div class="section-head"><span>Seus dados</span></div>
+        <button class="btn-outline-danger" id="btnDataInfo"
+                aria-expanded="false" aria-controls="dataHint">Importante</button>
+        <p class="data-hint hidden" id="dataHint">
+          Suas listas ficam salvas <b>só neste aparelho</b> — não há servidor.
+          Trocar de celular, remover o app ou limpar os dados do navegador
+          apaga tudo. Exporte de vez em quando: é o seu backup.
+        </p>
+        <div class="data-actions">
+          <button class="btn-ghost" id="btnExport">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Exportar
+          </button>
+          <button class="btn-ghost" id="btnImport">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 21V9m0 0L8 13m4-4l4 4M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Importar
+          </button>
+          <input type="file" id="importFile" accept="application/json,.json" hidden>
+        </div>
+      </div>
+
       <button class="btn-ghost" id="btnEditAvatar">Editar mascote</button>
       <button class="btn-ghost" id="btnDonate">Apoiar o projeto ❤️</button>
 
@@ -156,6 +187,26 @@
         <button class="btn-ghost" id="btnCopyCancel">Cancelar</button>
       </div>
     </div>
+
+    <!-- Importar backup: SUBSTITUI os dados deste aparelho -->
+    <div class="overlay hidden" id="importOverlay">
+      <div class="copy-box">
+        <strong class="danger-title">Importar este backup?</strong>
+        <div class="import-summary" id="importSummary"></div>
+        <span class="copy-hint">
+          Isso <b>substitui</b> tudo o que está neste aparelho pelos dados do
+          arquivo: listas, histórico, missões, nível, gemas e mascote.
+        </span>
+        <span class="copy-hint danger-note">
+          Os dados atuais deste aparelho serão perdidos.
+        </span>
+        <div class="confirm-actions">
+          <button class="btn-ghost" id="btnImportCancel">Não, cancelar</button>
+          <button class="btn-danger-solid" id="btnImportOk">Sim, importar</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ===== Tela: Lista / modo compra ===== -->
@@ -211,7 +262,7 @@
       <h1>Gostou do meu trabalho? 😊</h1>
       <p>Se este aplicativo foi útil para você e quiser apoiar o
          desenvolvimento de novos projetos, considere fazer uma
-         contribuição simbólica de <b>R$ 5,00 a R$ 10,00</b> via PIX.</p>
+         contribuição simbólica de <b>R$ 15,00 a R$ 20,00</b> via PIX.</p>
       <p>Sua ajuda me incentiva a continuar criando ferramentas
          gratuitas e aprimorando este projeto. ❤️</p>
       <div class="pix-box">
@@ -236,6 +287,49 @@
     <div class="comp-results" id="compResults"></div>
   </div>
 
+  <!-- ===== Tela: Histórico de compras ===== -->
+  <div id="screenHistory" class="screen hidden">
+    <div class="list-top">
+      <button class="icon-back" id="btnHistBack" aria-label="Voltar">‹</button>
+      <strong>Histórico de compras</strong>
+    </div>
+
+    <div class="hist-totals" id="histTotals"></div>
+
+    <div class="hist-tools">
+      <div class="sort-chips">
+        <button class="chip-sort active" id="sortRecent">Mais recentes</button>
+        <button class="chip-sort" id="sortSpent">Maior gasto</button>
+      </div>
+      <button class="btn-ghost btn-danger" id="btnHistClearAll">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Limpar tudo
+      </button>
+    </div>
+
+    <div class="hist-list" id="histList"></div>
+
+    <!-- Confirmação (apagar uma compra ou todas) — ação sem desfazer -->
+    <div class="overlay hidden" id="histConfirm">
+      <div class="copy-box">
+        <strong class="danger-title" id="histConfirmTitle"></strong>
+        <span class="copy-hint" id="histConfirmText"></span>
+        <span class="copy-hint">
+          Suas listas <b>abertas</b> e as que estão <b>no mercado</b> não são
+          tocadas, e você não perde nível nem gemas.
+        </span>
+        <span class="copy-hint danger-note">Não é possível desfazer.</span>
+        <div class="confirm-actions">
+          <button class="btn-ghost" id="btnHistCancel">Não, cancelar</button>
+          <button class="btn-danger-solid" id="btnHistOk">Sim, apagar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div id="toasts"></div>
@@ -254,12 +348,14 @@
 <script src="js/toast.js"></script>
 <script src="js/particles.js"></script>
 <script src="js/shopping.js"></script>
+<script src="js/backup.js"></script>
 <script src="js/missions.js"></script>
 <script src="js/donation.js"></script>
 <script src="js/ui-creator.js"></script>
 <script src="js/ui-home.js"></script>
 <script src="js/ui-list.js"></script>
 <script src="js/ui-compare.js"></script>
+<script src="js/ui-history.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -663,3 +663,175 @@ button.list-card:hover { border-color: var(--accent); background: var(--accent-s
 }
 .copy-row-main span { color: var(--muted); font-size: .72rem; }
 .copy-row .go { color: var(--faint); font-size: 1.2rem; flex-shrink: 0; }
+
+/* ============================================================
+   Histórico de compras + ações destrutivas
+   ============================================================ */
+/* Dois botões no cabeçalho de "Sua economia" (Histórico + Comparador) */
+.head-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.head-actions .btn-ghost { padding: 10px 14px; font-size: .82rem; }
+
+.btn-danger {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  color: var(--faint);
+  font-size: .74rem; font-weight: 600;
+}
+.btn-danger:hover, .btn-danger:active {
+  color: var(--danger);
+  border-color: rgba(221,75,108,.4);
+  background: var(--danger-soft);
+}
+.btn-danger svg { flex-shrink: 0; }
+
+.danger-title { color: var(--danger); }
+.danger-note { color: var(--danger); font-weight: 600; }
+.confirm-actions { display: flex; gap: 8px; margin-top: 6px; }
+.confirm-actions > button { flex: 1; min-height: 46px; }
+.btn-danger-solid {
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 700; font-size: .9rem;
+  border-radius: 999px;
+  padding: 12px 18px;
+}
+.btn-danger-solid:hover, .btn-danger-solid:active { filter: brightness(1.08); }
+/* Sem compras concluídas: o botão continua visível (descobrível), inerte */
+.btn-danger:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.btn-danger:disabled:hover {
+  color: var(--faint);
+  border-color: var(--border);
+  background: transparent;
+}
+
+/* ===== Tela: Histórico de compras ===== */
+.hist-totals {
+  display: flex; gap: 8px;
+  padding: 4px 16px 10px;
+}
+.hist-tot {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 3px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.hist-tot span { color: var(--muted); font-size: .68rem; }
+.hist-tot b { font-family: var(--mono); font-size: .88rem; }
+.hist-tot b.save { color: var(--accent); }
+
+.hist-tools {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  padding: 0 16px 10px;
+}
+.sort-chips { display: flex; gap: 6px; }
+.chip-sort {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 7px 13px;
+  color: var(--muted); font-size: .74rem; font-weight: 600;
+}
+.chip-sort.active {
+  background: var(--accent-soft); border-color: rgba(2,246,124,.35);
+  color: var(--accent);
+}
+
+.hist-list {
+  flex: 1; overflow-y: auto;
+  padding: 0 16px calc(20px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 8px;
+}
+.hist-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+.hist-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hist-main strong {
+  font-size: .9rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hist-main span { color: var(--muted); font-size: .72rem; }
+.hist-main .save { color: var(--accent); font-style: normal; }
+.hist-spent {
+  font-family: var(--mono); font-size: .88rem;
+  flex-shrink: 0;
+}
+.hist-del {
+  background: transparent; border: none;
+  color: var(--faint); font-size: 1.1rem;
+  width: 30px; height: 30px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.hist-del:hover, .hist-del:active { color: var(--danger); background: var(--danger-soft); }
+
+/* A compra mais cara do histórico — destaque em vermelho */
+.hist-spent {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+}
+.hist-spent.top { color: var(--danger); }
+.hist-spent.top em {
+  font-style: normal; font-weight: 600;
+  font-family: var(--font); font-size: .6rem;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--danger); opacity: .85;
+}
+
+/* ===== Seus dados (exportar / importar) ===== */
+/* ".home p" (creator.css) limita TODO parágrafo da Home a 280px, o que
+   deixava o aviso bem mais estreito que o botão. Aqui ele acompanha a
+   largura da seção; o padding lateral alinha o texto com o miolo do pill. */
+.home .data-hint {
+  width: 100%; max-width: 100%;
+  padding: 0 4px;
+  color: var(--muted); font-size: .78rem; line-height: 1.55;
+  text-align: left;
+}
+.data-hint b { color: var(--text); font-weight: 600; }
+.data-actions { display: flex; gap: 8px; }
+.data-actions .btn-ghost {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: .84rem; font-weight: 600;
+}
+.data-actions .btn-ghost:hover,
+.data-actions .btn-ghost:active {
+  color: var(--accent);
+  border-color: rgba(2,246,124,.35);
+  background: var(--accent-soft);
+}
+
+/* Resumo do backup dentro da confirmação de importar */
+.import-summary {
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.imp-line { display: flex; justify-content: space-between; gap: 10px; }
+.imp-line span { color: var(--muted); font-size: .74rem; }
+.imp-line b { font-family: var(--mono); font-size: .76rem; }
+
+/* Botão "Importante": abre o aviso sobre onde os dados ficam salvos.
+   Mesma geometria do "Criar" (.btn-primary), mas só contorno vermelho —
+   o padding cai de 15px p/ 13px porque a borda de 2px soma 4px na altura. */
+.btn-outline-danger {
+  width: 100%;
+  background: transparent;
+  border: 2px solid var(--danger);
+  color: var(--danger);
+  font-size: 1rem; font-weight: 700;
+  border-radius: 999px;
+  padding: 13px;
+  transition: background .15s;
+}
+.btn-outline-danger:hover,
+.btn-outline-danger:active { background: var(--danger-soft); }

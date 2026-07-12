@@ -5,7 +5,7 @@
    versão do cache para forçar atualização.
    ============================================================ */
 
-var CACHE = "mercator-v27";
+var CACHE = "mercator-v28";
 
 var FILES = [
   ".",
@@ -26,12 +26,14 @@ var FILES = [
   "js/toast.js",
   "js/particles.js",
   "js/shopping.js",
+  "js/backup.js",
   "js/missions.js",
   "js/donation.js",
   "js/ui-creator.js",
   "js/ui-home.js",
   "js/ui-list.js",
   "js/ui-compare.js",
+  "js/ui-history.js",
   "js/app.js",
   "icons/icon-192.png",
   "icons/icon-512.png",

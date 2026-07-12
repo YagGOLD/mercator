@@ -252,6 +252,32 @@ window.Shopping = (function () {
     return h;
   }
 
+  // Apaga UMA compra do histórico (identificada pela data de conclusão,
+  // que é a chave entre as duas fontes). A lista concluída correspondente
+  // vai junto — sem isso, syncHistory() recria a linha no próximo render.
+  function removeHistoryEntry(date) {
+    saveHistory(loadHistory().filter(function (c) { return c.date !== date; }));
+    saveLists(loadLists().filter(function (l) {
+      return !(l.status === "concluida" && l.concludedAt === date);
+    }));
+  }
+
+  // Zera o histórico de compras.
+  // ATENÇÃO: não basta esvaziar mercator.history — as listas CONCLUÍDAS
+  // são a fonte da verdade, e syncHistory() recria as linhas a partir
+  // delas no próximo render da Home. Por isso as concluídas vão junto.
+  // Não toca em listas abertas/no mercado nem no progresso (nível,
+  // gemas, missões resgatadas). Devolve quantas compras foram apagadas.
+  function clearHistory() {
+    var lists = loadLists();
+    var kept = lists.filter(function (l) { return l.status !== "concluida"; });
+    var removed = Math.max(lists.length - kept.length, loadHistory().length);
+
+    saveLists(kept);
+    saveHistory([]);
+    return removed;
+  }
+
   function fmt(n) {
     return (n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   }
@@ -273,6 +299,8 @@ window.Shopping = (function () {
     marketDelta: marketDelta,
     conclude: conclude,
     syncHistory: syncHistory,
+    removeHistoryEntry: removeHistoryEntry,
+    clearHistory: clearHistory,
     fmt: fmt
   };
 })();
