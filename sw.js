@@ -5,7 +5,7 @@
    versão do cache para forçar atualização.
    ============================================================ */
 
-var CACHE = "mercator-v26";
+var CACHE = "mercator-v27";
 
 var FILES = [
   ".",
@@ -35,6 +35,7 @@ var FILES = [
   "js/app.js",
   "icons/icon-192.png",
   "icons/icon-512.png",
+  "icons/favicon.png",
   "icons/pix-qr.png",
 
   // ===== Assets do avatar (pack New_Avatar) =====
